@@ -1,0 +1,11 @@
+.gradle
+.idea
+*.iml
+out
+build
+deploy
+logs
+target
+*.log
+upload-sdk.log.*
+.DS_Store

@@ -394,6 +394,8 @@ Hello, classLoader!
 
 #### 解答
 
+![week-01-homework-03](week-01-homework-03.png)
+
 ### 第4题
 
 #### 描述

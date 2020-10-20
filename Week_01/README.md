@@ -88,7 +88,7 @@ $ javap -v -l -c me.zhongmingwu.week01.Hello
 ```
 
 ```sql
-Classfile /${path}/JAVA-000/java-training-camp/src/main/java/me/zhongmingwu/week01/Hello.class -- 字节码文件的绝对路径
+Classfile ${path}/JAVA-000/java-training-camp/src/main/java/me/zhongmingwu/week01/Hello.class -- 字节码文件的绝对路径
   Last modified Oct 20, 2020; size 1162 bytes -- 最近编译时间，字节码文件的大小
   MD5 checksum 0ac7097c8a625590af9282b9d3e2635f -- 字节码文件的MD5校验码
   Compiled from "Hello.java" -- 被编译的源代码文件
@@ -335,6 +335,56 @@ SourceFile: "Hello.java"
 > 自定义一个Classloader，加载一个Hello.xlass 文件，执行hello方法，此文件内容是一个Hello.class文件所有字节(x=255-x)处理后的文件。文件群里提供。
 
 #### 解答
+
+##### 源代码
+
+```java
+package me.zhongmingwu.week01;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.nio.file.Files;
+
+public class HelloClassLoader extends ClassLoader {
+
+    @Override
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+        byte[] bytes = decode();
+        return defineClass(name, bytes, 0, bytes.length);
+    }
+
+    private byte[] decode() {
+        byte[] tmpBytes = new byte[0];
+        try {
+            tmpBytes = Files.readAllBytes(new File(System.getProperty("hello_class_location")).toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        byte[] bytes = new byte[tmpBytes.length];
+        for (int i = 0; i < tmpBytes.length; i++) {
+            bytes[i] = (byte) (255 - tmpBytes[i]);
+        }
+        return bytes;
+    }
+
+    public static void main(String[] args) throws Exception {
+        Object hello = new HelloClassLoader().findClass("Hello").newInstance();
+        Method method = hello.getClass().getMethod("hello");
+        method.invoke(hello);
+    }
+}
+```
+
+##### 编译+运行
+
+```
+$ javac -g me/zhongmingwu/week01/HelloClassLoader.java
+
+$ java -Dhello_class_location=${path}/Hello.xlass me.zhongmingwu.week01.HelloClassLoader
+Hello, classLoader!
+```
 
 ### 第3题
 

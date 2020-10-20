@@ -407,13 +407,110 @@ Hello, classLoader!
 
 ##### jstat
 
-```shell
+1. Eden区2G，Survivor区68M，Old区1212M，Meta区144M，Compressed Class Space区为16.5M
+2. YGC有24次，总耗时1.383秒，平均每次耗时57.6毫秒，没有Full GC
 
+```
+$ jstat -gc 18 1000 3
+ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU    CCSC   CCSU   YGC     YGCT    FGC    FGCT     GCT   
+ 0.0   69632.0  0.0   69632.0 2048000.0 1642496.0 1241088.0   236657.7  147456.0 140822.1 16896.0 15717.2     24    1.383   0      0.000    1.383
+ 0.0   69632.0  0.0   69632.0 2048000.0 1642496.0 1241088.0   236657.7  147456.0 140822.1 16896.0 15717.2     24    1.383   0      0.000    1.383
+ 0.0   69632.0  0.0   69632.0 2048000.0 1642496.0 1241088.0   236657.7  147456.0 140822.1 16896.0 15717.2     24    1.383   0      0.000    1.383
+ 
+$ jstat -gcutil 18 1000 3
+  S0     S1     E      O      M     CCS    YGC     YGCT    FGC    FGCT     GCT   
+  0.00 100.00  80.40  19.07  95.50  93.02     24    1.383     0    0.000    1.383
+  0.00 100.00  80.40  19.07  95.50  93.02     24    1.383     0    0.000    1.383
+  0.00 100.00  86.60  19.07  95.50  93.02     24    1.383     0    0.000    1.383
+```
+
+##### jmap
+
+```sql
+$ jmap -heap 18
+Attaching to process ID 18, please wait...
+Debugger attached successfully.
+Server compiler detected. -- 对应-server参数，JIT采用Server模式
+JVM version is 25.131-b11 -- 对应Java 8
+
+using thread-local object allocation. -- TLAB
+Garbage-First (G1) GC with 12 thread(s) -- 使用G1，线程数为12
+
+Heap Configuration:
+   MinHeapFreeRatio         = 40
+   MaxHeapFreeRatio         = 70
+   MaxHeapSize              = 3439329280 (3280.0MB) -- 堆大小
+   NewSize                  = 1363144 (1.2999954223632812MB) -- 当前新生代大小
+   MaxNewSize               = 2063597568 (1968.0MB) -- 新生代最大大小
+   OldSize                  = 5452592 (5.1999969482421875MB) -- 当前老年代大小
+   NewRatio                 = 2
+   SurvivorRatio            = 8
+   MetaspaceSize            = 21807104 (20.796875MB) -- Meta区当前大小
+   CompressedClassSpaceSize = 1073741824 (1024.0MB) -- CompressedClassSpace最大大小
+   MaxMetaspaceSize         = 17592186044415 MB -- Meta区最大大小
+   G1HeapRegionSize         = 4194304 (4.0MB) -- Region大小
+
+Heap Usage:
+G1 Heap:
+   regions  = 820 -- Region数量
+   capacity = 3439329280 (3280.0MB) -- 820*4 = 3280
+   used     = 2268186352 (2163.111068725586MB)
+   free     = 1171142928 (1116.888931274414MB)
+   65.94850819285323% used
+G1 Young Generation:
+Eden Space:
+   regions  = 465
+   capacity = 2097152000 (2000.0MB)
+   used     = 1950351360 (1860.0MB) -- 465*4 = 1860
+   free     = 146800640 (140.0MB)
+   93.0% used
+Survivor Space:
+   regions  = 17
+   capacity = 71303168 (68.0MB) 
+   used     = 71303168 (68.0MB) -- 17*4 = 68
+   free     = 0 (0.0MB)
+   100.0% used
+G1 Old Generation:
+   regions  = 60
+   capacity = 1270874112 (1212.0MB)
+   used     = 242337520 (231.11106872558594MB) -- 60*4 = 240 ≈ 231
+   free     = 1028536592 (980.8889312744141MB)
+   19.068570026863526% used
+
+64339 interned Strings occupying 6878448 bytes. -- 字符串常量占用6.56M
+```
+
+```
+$ jmap -histo 18 | head -n 20
+
+ num     #instances         #bytes  class name
+----------------------------------------------
+   1:         91841      177621136  [I
+   2:        860685      109615512  [C
+   3:        107108       48112672  [B
+   4:        681784       16362816  java.lang.String
+   5:        312055        9985760  java.util.HashMap$Node
+   6:        218623        9636592  [Ljava.lang.Object;
+   7:         84015        7393320  java.lang.reflect.Method
+   8:         58747        6304672  [Ljava.util.HashMap$Node;
+   9:           712        5925696  [Lcom.alibaba.druid.proxy.jdbc.JdbcParameter;
+  10:        341770        5468320  java.lang.Integer
+  11:        211968        5087232  io.netty.buffer.PoolThreadCache$MemoryRegionCache$Entry
+  12:        153635        4916320  java.util.concurrent.ConcurrentHashMap$Node
+  13:        150297        4809504  org.apache.ibatis.reflection.property.PropertyTokenizer
+  14:         16370        3294880  [Z
+  15:         75771        3030840  java.util.LinkedHashMap$Entry
+  16:         25286        2843000  java.lang.Class
+  17:         33504        2412288  java.lang.reflect.Field
 ```
 
 ##### jstack
 
-##### jmap
+![image-20201020141818378](image-20201020141818378.png)
+
+![image-20201020141844802](image-20201020141844802.png)
+
+![image-20201020141915468](image-20201020141915468.png)
 
 ## 周六
 
@@ -425,3 +522,6 @@ Hello, classLoader!
 
 #### 解答
 
+跳过
+
+参考周四第4四题

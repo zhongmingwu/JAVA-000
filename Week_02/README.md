@@ -23,12 +23,12 @@ $ javac GCLogAnalysis.java
 
 #### 并行
 
-##### 4096m --default
+##### 默认
 
-###### 命令
+###### 执行
 
 ```
-$ java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:gc_log/parallel_4096.log GCLogAnalysis
+$ java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:gc_log/parallel_default.log GCLogAnalysis
 正在执行...
 执行结束!共生成对象次数:11547
 ```
@@ -97,7 +97,7 @@ Heap
 
    - 默认采用并行GC
 
-5. 总共发生了9次Young GC，3次Full GC，下面仅分析第一次Young GC和第一次Full GC
+5. 总共发生了9次Young GC和3次Full GC，并且没有连续的Full GC，下面仅分析第一次Young GC和第一次Full GC
 
 6. Young GC
 
@@ -123,7 +123,7 @@ Heap
      - user + sys > real
        - 多核CPU
 
-7. Full GC 
+7. Full GC
 
    - 2020-10-24T15:51:37.909-0800: 0.246
      - GC发生的时间戳
@@ -177,6 +177,18 @@ Heap
        - CCS区已经申请的虚拟地址空间为1048576K（1GB），操作系统实际分配的物理内存为512K
        - 容量为386K，使用了309K（80%）
 
+**GC Statistics**
+
+![image-20201024212236473](image/image-20201024212236473.png)
+
+**Object Stats**
+
+![image-20201024212348481](image/image-20201024212348481.png)
+
+**GC Causes**
+
+![image-20201024212438269](image/image-20201024212438269.png)
+
 **user sys real**
 
 [What do 'real', 'user' and 'sys' mean in the output of time(1)?](https://stackoverflow.com/questions/556405/what-do-real-user-and-sys-mean-in-the-output-of-time1)
@@ -187,7 +199,7 @@ User
 
 Sys
 
-> **Sys** is the amount of CPU time spent in the kernel within the process. This means executing CPU time spent in system calls within the kernel, as opposed to library code, which is still running in user-space. Like 'user', this is only CPU time used by the process. 
+> **Sys** is the amount of CPU time spent in the kernel within the process. This means executing CPU time spent in system calls within the kernel, as opposed to library code, which is still running in user-space. Like 'user', this is only CPU time used by the process.
 
 Real
 
@@ -213,11 +225,112 @@ Footprint
 
 > Maximum heap footprint is specified using the option `-Xmx<N>`. In addition, the collector has an implicit goal of minimizing the size of the heap as long as the other goals are being met.
 
-###### 2048m
+##### 256m
 
-###### 1024m
+###### 执行
 
-###### 512m
+```
+$ java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:gc_log/parallel_256.log -Xms256m -Xmx256m GCLogAnalysis
+正在执行...
+Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
+	at GCLogAnalysis.generateGarbage(GCLogAnalysis.java:50)
+	at GCLogAnalysis.main(GCLogAnalysis.java:27)
+```
+
+###### 日志
+
+```
+OpenJDK 64-Bit Server VM (25.265-b11) for bsd-amd64 JRE (Zulu 8.48.0.53-CA-macosx) (1.8.0_265-b11), built on Jul 28 2020 03:07:54 by "zulu_re" with gcc 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.11.00)
+Memory: 4k page, physical 16777216k(1641796k free)
+
+/proc/meminfo:
+
+CommandLine flags: -XX:InitialHeapSize=268435456 -XX:MaxHeapSize=268435456 -XX:+PrintGC -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseParallelGC
+2020-10-24T21:06:51.065-0800: 0.134: [GC (Allocation Failure) [PSYoungGen: 65536K->10743K(76288K)] 65536K->23377K(251392K), 0.0085607 secs] [Times: user=0.01 sys=0.04, real=0.01 secs]
+2020-10-24T21:06:51.085-0800: 0.155: [GC (Allocation Failure) [PSYoungGen: 76279K->10739K(76288K)] 88913K->47189K(251392K), 0.0129632 secs] [Times: user=0.02 sys=0.07, real=0.01 secs]
+2020-10-24T21:06:51.106-0800: 0.176: [GC (Allocation Failure) [PSYoungGen: 76173K->10743K(76288K)] 112624K->72793K(251392K), 0.0104206 secs] [Times: user=0.01 sys=0.04, real=0.01 secs]
+2020-10-24T21:06:51.124-0800: 0.194: [GC (Allocation Failure) [PSYoungGen: 76279K->10741K(76288K)] 138329K->92704K(251392K), 0.0088805 secs] [Times: user=0.02 sys=0.04, real=0.01 secs]
+2020-10-24T21:06:51.142-0800: 0.212: [GC (Allocation Failure) [PSYoungGen: 76163K->10747K(76288K)] 158125K->115392K(251392K), 0.0102026 secs] [Times: user=0.01 sys=0.05, real=0.01 secs]
+2020-10-24T21:06:51.160-0800: 0.229: [GC (Allocation Failure) [PSYoungGen: 76221K->10749K(40448K)] 180865K->140109K(215552K), 0.0098795 secs] [Times: user=0.02 sys=0.04, real=0.01 secs]
+2020-10-24T21:06:51.173-0800: 0.243: [GC (Allocation Failure) [PSYoungGen: 40138K->17927K(58368K)] 169499K->151877K(233472K), 0.0021099 secs] [Times: user=0.01 sys=0.00, real=0.00 secs]
+2020-10-24T21:06:51.179-0800: 0.249: [GC (Allocation Failure) [PSYoungGen: 47567K->26158K(58368K)] 181517K->163833K(233472K), 0.0029516 secs] [Times: user=0.02 sys=0.01, real=0.01 secs]
+2020-10-24T21:06:51.185-0800: 0.255: [GC (Allocation Failure) [PSYoungGen: 55826K->28651K(58368K)] 193502K->174056K(233472K), 0.0043213 secs] [Times: user=0.01 sys=0.01, real=0.01 secs]
+2020-10-24T21:06:51.190-0800: 0.260: [Full GC (Ergonomics) [PSYoungGen: 28651K->0K(58368K)] [ParOldGen: 145405K->155602K(175104K)] 174056K->155602K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0176453 secs] [Times: user=0.09 sys=0.02, real=0.01 secs]
+2020-10-24T21:06:51.212-0800: 0.281: [Full GC (Ergonomics) [PSYoungGen: 29294K->0K(58368K)] [ParOldGen: 155602K->162384K(175104K)] 184896K->162384K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0165632 secs] [Times: user=0.08 sys=0.01, real=0.01 secs]
+2020-10-24T21:06:51.234-0800: 0.304: [Full GC (Ergonomics) [PSYoungGen: 29696K->0K(58368K)] [ParOldGen: 162384K->166761K(175104K)] 192080K->166761K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0172991 secs] [Times: user=0.10 sys=0.01, real=0.02 secs]
+2020-10-24T21:06:51.256-0800: 0.326: [Full GC (Ergonomics) [PSYoungGen: 29696K->0K(58368K)] [ParOldGen: 166761K->173804K(175104K)] 196457K->173804K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0178451 secs] [Times: user=0.10 sys=0.02, real=0.02 secs]
+2020-10-24T21:06:51.279-0800: 0.349: [Full GC (Ergonomics) [PSYoungGen: 29689K->6484K(58368K)] [ParOldGen: 173804K->174924K(175104K)] 203493K->181409K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0192671 secs] [Times: user=0.11 sys=0.00, real=0.02 secs]
+2020-10-24T21:06:51.303-0800: 0.373: [Full GC (Ergonomics) [PSYoungGen: 29696K->10148K(58368K)] [ParOldGen: 174924K->174464K(175104K)] 204620K->184612K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0189544 secs] [Times: user=0.11 sys=0.00, real=0.02 secs]
+2020-10-24T21:06:51.326-0800: 0.396: [Full GC (Ergonomics) [PSYoungGen: 29692K->14001K(58368K)] [ParOldGen: 174464K->174977K(175104K)] 204156K->188978K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0197305 secs] [Times: user=0.13 sys=0.00, real=0.02 secs]
+2020-10-24T21:06:51.349-0800: 0.418: [Full GC (Ergonomics) [PSYoungGen: 29451K->17911K(58368K)] [ParOldGen: 174977K->174508K(175104K)] 204428K->192419K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0207601 secs] [Times: user=0.12 sys=0.01, real=0.03 secs]
+2020-10-24T21:06:51.371-0800: 0.441: [Full GC (Ergonomics) [PSYoungGen: 29696K->19583K(58368K)] [ParOldGen: 174508K->174521K(175104K)] 204204K->194104K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0184822 secs] [Times: user=0.11 sys=0.00, real=0.02 secs]
+2020-10-24T21:06:51.392-0800: 0.461: [Full GC (Ergonomics) [PSYoungGen: 29696K->18754K(58368K)] [ParOldGen: 174521K->174810K(175104K)] 204217K->193564K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0188716 secs] [Times: user=0.12 sys=0.00, real=0.02 secs]
+2020-10-24T21:06:51.412-0800: 0.482: [Full GC (Ergonomics) [PSYoungGen: 29695K->22727K(58368K)] [ParOldGen: 174810K->174521K(175104K)] 204505K->197248K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0242051 secs] [Times: user=0.15 sys=0.00, real=0.02 secs]
+2020-10-24T21:06:51.438-0800: 0.507: [Full GC (Ergonomics) [PSYoungGen: 29693K->22947K(58368K)] [ParOldGen: 174521K->174898K(175104K)] 204215K->197845K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0236721 secs] [Times: user=0.16 sys=0.00, real=0.03 secs]
+2020-10-24T21:06:51.463-0800: 0.532: [Full GC (Ergonomics) [PSYoungGen: 29685K->23036K(58368K)] [ParOldGen: 174898K->174953K(175104K)] 204583K->197990K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0195883 secs] [Times: user=0.12 sys=0.00, real=0.02 secs]
+2020-10-24T21:06:51.484-0800: 0.553: [Full GC (Ergonomics) [PSYoungGen: 29681K->22246K(58368K)] [ParOldGen: 174953K->175036K(175104K)] 204635K->197283K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0195309 secs] [Times: user=0.12 sys=0.00, real=0.02 secs]
+2020-10-24T21:06:51.504-0800: 0.574: [Full GC (Ergonomics) [PSYoungGen: 29661K->24284K(58368K)] [ParOldGen: 175036K->175029K(175104K)] 204697K->199314K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0186212 secs] [Times: user=0.12 sys=0.01, real=0.02 secs]
+2020-10-24T21:06:51.524-0800: 0.594: [Full GC (Ergonomics) [PSYoungGen: 29627K->25639K(58368K)] [ParOldGen: 175029K->175018K(175104K)] 204657K->200658K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0122496 secs] [Times: user=0.08 sys=0.00, real=0.01 secs]
+2020-10-24T21:06:51.537-0800: 0.607: [Full GC (Ergonomics) [PSYoungGen: 29696K->25735K(58368K)] [ParOldGen: 175018K->174989K(175104K)] 204714K->200725K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0128341 secs] [Times: user=0.08 sys=0.00, real=0.02 secs]
+2020-10-24T21:06:51.551-0800: 0.621: [Full GC (Ergonomics) [PSYoungGen: 29643K->26366K(58368K)] [ParOldGen: 174989K->175096K(175104K)] 204632K->201462K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0062705 secs] [Times: user=0.04 sys=0.00, real=0.00 secs]
+2020-10-24T21:06:51.558-0800: 0.627: [Full GC (Ergonomics) [PSYoungGen: 29542K->27738K(58368K)] [ParOldGen: 175096K->174997K(175104K)] 204639K->202735K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0238922 secs] [Times: user=0.13 sys=0.00, real=0.03 secs]
+2020-10-24T21:06:51.582-0800: 0.652: [Full GC (Ergonomics) [PSYoungGen: 29573K->28115K(58368K)] [ParOldGen: 174997K->174997K(175104K)] 204570K->203112K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0034332 secs] [Times: user=0.01 sys=0.00, real=0.00 secs]
+2020-10-24T21:06:51.586-0800: 0.656: [Full GC (Ergonomics) [PSYoungGen: 29525K->28449K(58368K)] [ParOldGen: 174997K->174628K(175104K)] 204522K->203077K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0051581 secs] [Times: user=0.02 sys=0.00, real=0.01 secs]
+2020-10-24T21:06:51.591-0800: 0.661: [Full GC (Ergonomics) [PSYoungGen: 29421K->28792K(58368K)] [ParOldGen: 174628K->174628K(175104K)] 204049K->203420K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0022134 secs] [Times: user=0.01 sys=0.00, real=0.00 secs]
+2020-10-24T21:06:51.594-0800: 0.663: [Full GC (Ergonomics) [PSYoungGen: 29559K->28936K(58368K)] [ParOldGen: 174628K->174628K(175104K)] 204187K->203564K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0019199 secs] [Times: user=0.00 sys=0.00, real=0.00 secs]
+2020-10-24T21:06:51.596-0800: 0.666: [Full GC (Ergonomics) [PSYoungGen: 29456K->28988K(58368K)] [ParOldGen: 174628K->174628K(175104K)] 204084K->203616K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0019255 secs] [Times: user=0.01 sys=0.00, real=0.00 secs]
+2020-10-24T21:06:51.598-0800: 0.668: [Full GC (Allocation Failure) [PSYoungGen: 28988K->28988K(58368K)] [ParOldGen: 174628K->174609K(175104K)] 203616K->203597K(233472K), [Metaspace: 2892K->2892K(1056768K)], 0.0294956 secs] [Times: user=0.18 sys=0.00, real=0.03 secs]
+Heap
+ PSYoungGen      total 58368K, used 29609K [0x00000007bab00000, 0x00000007c0000000, 0x00000007c0000000)
+  eden space 29696K, 99% used [0x00000007bab00000,0x00000007bc7ea640,0x00000007bc800000)
+  from space 28672K, 0% used [0x00000007bc800000,0x00000007bc800000,0x00000007be400000)
+  to   space 28672K, 0% used [0x00000007be400000,0x00000007be400000,0x00000007c0000000)
+ ParOldGen       total 175104K, used 174609K [0x00000007b0000000, 0x00000007bab00000, 0x00000007bab00000)
+  object space 175104K, 99% used [0x00000007b0000000,0x00000007baa84498,0x00000007bab00000)
+ Metaspace       used 2923K, capacity 4486K, committed 4864K, reserved 1056768K
+  class space    used 311K, capacity 386K, committed 512K, reserved 1048576K
+```
+
+###### 分析
+
+1. 执行了9次Young GC和25次Full GC（连续25次，且最后一次Full GC失败的原因是Allocation Failure，直接OOM）
+2. 第1次Full GC到第4次Full GC不但没有回收Old区，反而从Young区晋升了更多的对象
+3. 第5次Full GC到第25次Full GC基本无法回收Old区，由于无法晋升到Old区，Young区只能不断增长，最终导致了OOM
+4. 从JVM进程退出前的内存布局可知，Eden区使用了99%，Old区也使用了99%
+   - Old区无法回收，且To区无法容纳Eden区所有的存活对象，最终导致了Eden区无法分配新对象，最终导致了OOM
+
+**Heap After GC**
+
+Full GC基本没有回收多少空间
+
+![image-20201024214518643](image/image-20201024214518643.png)
+
+**GC Statistics**
+
+![image-20201024214209252](image/image-20201024214209252.png)
+
+**Object Stats**
+
+![image-20201024214258824](image/image-20201024214258824.png)
+
+**GC Causes**
+
+![image-20201024214335398](image/image-20201024214335398.png)
+
+##### 对比
+
+|                             | default     | 4096m      | 2048m       | 1024m       | 512m        | 256m - OOM |
+| --------------------------- | ----------- | ---------- | ----------- | ----------- | ----------- | ---------- |
+| 生成对象次数                | 11547       | 11819      | 12610       | 12483       | 7659        | -          |
+| Minor GC count              | 9           | 3          | 7           | 21          | 19          | 9          |
+| Minor GC min/max time (ms)  | 10.0 / 70.0 | 80.0 / 110 | 10.0 / 70.0 | 0 / 40.0    | 0 / 20.0    | 0 / 10.0   |
+| Full GC Count               | 3           | 0          | 0           | 1           | 12          | 25         |
+| Full GC min/max time (ms)   | 20.0 / 40.0 | -          | -           | 50.0 / 50.0 | 30.0 / 40.0 | 0 / 30.0   |
+| Pause Count                 | 12          | 3          | 7           | 22          | 31          | 34         |
+| Pause total time            | 410 ms      | 270 ms     | 360 ms      | 430 ms      | 620 ms      | 480 ms     |
+| Avg creation rate (gb/sec)  | 3           | 6.59       | 4.55        | 3.71        | 2.23        | 1.33       |
+| Avg promotion rate (mb/sec) | 357.54      | 709.38     | 903.16      | 987.73      | 467.18      | 266.42     |
+| 备注                        |             | 综合最佳   |             |             |             |            |
 
 #### 串行
 

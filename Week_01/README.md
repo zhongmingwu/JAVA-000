@@ -326,8 +326,6 @@ Constant pool: -- 常量池，组合起来构成字节码文件中的各种符�
 SourceFile: "Hello.java"
 ```
 
-
-
 ### 第2题
 
 #### 描述
@@ -394,7 +392,7 @@ Hello, classLoader!
 
 #### 解答
 
-![week-01-homework-03](/Users/zhongmingmao/Downloads/typora-img/week-01-homework-03.png)
+![week-01-homework-03.png](image/week-01-homework-03.png)
 
 ### 第4题
 
@@ -412,13 +410,13 @@ Hello, classLoader!
 
 ```
 $ jstat -gc 18 1000 3
- S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU    CCSC   CCSU   YGC     YGCT    FGC    FGCT     GCT   
+ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU    CCSC   CCSU   YGC     YGCT    FGC    FGCT     GCT
  0.0   69632.0  0.0   69632.0 2048000.0 1642496.0 1241088.0   236657.7  147456.0 140822.1 16896.0 15717.2     24    1.383   0      0.000    1.383
  0.0   69632.0  0.0   69632.0 2048000.0 1642496.0 1241088.0   236657.7  147456.0 140822.1 16896.0 15717.2     24    1.383   0      0.000    1.383
  0.0   69632.0  0.0   69632.0 2048000.0 1642496.0 1241088.0   236657.7  147456.0 140822.1 16896.0 15717.2     24    1.383   0      0.000    1.383
- 
+
 $ jstat -gcutil 18 1000 3
-  S0     S1     E      O      M     CCS    YGC     YGCT    FGC    FGCT     GCT   
+  S0     S1     E      O      M     CCS    YGC     YGCT    FGC    FGCT     GCT
   0.00 100.00  80.40  19.07  95.50  93.02     24    1.383     0    0.000    1.383
   0.00 100.00  80.40  19.07  95.50  93.02     24    1.383     0    0.000    1.383
   0.00 100.00  86.60  19.07  95.50  93.02     24    1.383     0    0.000    1.383
@@ -466,7 +464,7 @@ Eden Space:
    93.0% used
 Survivor Space:
    regions  = 17
-   capacity = 71303168 (68.0MB) 
+   capacity = 71303168 (68.0MB)
    used     = 71303168 (68.0MB) -- 17*4 = 68
    free     = 0 (0.0MB)
    100.0% used
@@ -506,11 +504,11 @@ $ jmap -histo 18 | head -n 20
 
 ##### jstack
 
-![image-20201020141818378](/Users/zhongmingmao/Downloads/typora-img/image-20201020141818378-3541215.png)
+![image-20201020141818378-3541215.png](image/image-20201020141818378-3541215.png)
 
-![image-20201020141844802](/Users/zhongmingmao/Downloads/typora-img/image-20201020141844802-3541222.png)
+![image-20201020141844802-3541222.png](image/image-20201020141844802-3541222.png)
 
-![image-20201020141915468](/Users/zhongmingmao/Downloads/typora-img/image-20201020141915468-3541227.png)
+![image-20201020141915468-3541227.png](image/image-20201020141915468-3541227.png)
 
 ## 周六
 

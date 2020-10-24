@@ -394,7 +394,7 @@ Hello, classLoader!
 
 #### 解答
 
-![week-01-homework-03](week-01-homework-03.png)
+![week-01-homework-03](/Users/zhongmingmao/Downloads/typora-img/week-01-homework-03.png)
 
 ### 第4题
 
@@ -506,11 +506,11 @@ $ jmap -histo 18 | head -n 20
 
 ##### jstack
 
-![image-20201020141818378](image-20201020141818378.png)
+![image-20201020141818378](/Users/zhongmingmao/Downloads/typora-img/image-20201020141818378-3541215.png)
 
-![image-20201020141844802](image-20201020141844802.png)
+![image-20201020141844802](/Users/zhongmingmao/Downloads/typora-img/image-20201020141844802-3541222.png)
 
-![image-20201020141915468](image-20201020141915468.png)
+![image-20201020141915468](/Users/zhongmingmao/Downloads/typora-img/image-20201020141915468-3541227.png)
 
 ## 周六
 

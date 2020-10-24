@@ -82,11 +82,16 @@ Heap
    - klass pointer从8 Bytes压缩到4 Bytes，提升内存利用率
 
    - UseCompressedOops
+
      - 普通对象指针压缩
+
    - UseCompressedClassPointers
+
      - 类指针压缩
+
      - 依赖UseCompressedOops
-       - UseCompressedOops must be on for UseCompressedClassPointers to be on.
+
+       - > UseCompressedOops must be on for UseCompressedClassPointers to be on.
 
 4. -XX:+UseParallelGC
 

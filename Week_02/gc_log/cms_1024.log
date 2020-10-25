@@ -1,0 +1,29 @@
+OpenJDK 64-Bit Server VM (25.265-b11) for bsd-amd64 JRE (Zulu 8.48.0.53-CA-macosx) (1.8.0_265-b11), built on Jul 28 2020 03:07:54 by "zulu_re" with gcc 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.11.00)
+Memory: 4k page, physical 16777216k(760852k free)
+
+/proc/meminfo:
+
+CommandLine flags: -XX:InitialHeapSize=1073741824 -XX:MaxHeapSize=1073741824 -XX:MaxNewSize=357916672 -XX:MaxTenuringThreshold=6 -XX:NewSize=357916672 -XX:OldPLABSize=16 -XX:OldSize=715825152 -XX:+PrintGC -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseConcMarkSweepGC -XX:+UseParNewGC 
+2020-10-25T11:42:54.794-0800: 0.318: [GC (Allocation Failure) 2020-10-25T11:42:54.794-0800: 0.318: [ParNew: 279616K->34944K(314560K), 0.0400220 secs] 279616K->89497K(1013632K), 0.0402203 secs] [Times: user=0.07 sys=0.14, real=0.04 secs] 
+2020-10-25T11:42:54.889-0800: 0.413: [GC (Allocation Failure) 2020-10-25T11:42:54.889-0800: 0.413: [ParNew: 314560K->34942K(314560K), 0.0513929 secs] 369113K->172765K(1013632K), 0.0515164 secs] [Times: user=0.07 sys=0.09, real=0.06 secs] 
+2020-10-25T11:42:54.995-0800: 0.519: [GC (Allocation Failure) 2020-10-25T11:42:54.995-0800: 0.519: [ParNew: 314558K->34944K(314560K), 0.1175563 secs] 452381K->250019K(1013632K), 0.1176949 secs] [Times: user=0.23 sys=0.04, real=0.12 secs] 
+2020-10-25T11:42:55.169-0800: 0.693: [GC (Allocation Failure) 2020-10-25T11:42:55.169-0800: 0.693: [ParNew: 314560K->34941K(314560K), 0.0823950 secs] 529635K->322208K(1013632K), 0.0825635 secs] [Times: user=0.20 sys=0.03, real=0.09 secs] 
+2020-10-25T11:42:55.320-0800: 0.844: [GC (Allocation Failure) 2020-10-25T11:42:55.320-0800: 0.844: [ParNew: 314557K->34942K(314560K), 0.0845831 secs] 601824K->407497K(1013632K), 0.0846862 secs] [Times: user=0.25 sys=0.04, real=0.08 secs] 
+2020-10-25T11:42:55.405-0800: 0.929: [GC (CMS Initial Mark) [1 CMS-initial-mark: 372554K(699072K)] 407626K(1013632K), 0.0007025 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+2020-10-25T11:42:55.406-0800: 0.930: [CMS-concurrent-mark-start]
+2020-10-25T11:42:55.410-0800: 0.934: [CMS-concurrent-mark: 0.004/0.004 secs] [Times: user=0.01 sys=0.00, real=0.01 secs] 
+2020-10-25T11:42:55.410-0800: 0.934: [CMS-concurrent-preclean-start]
+2020-10-25T11:42:55.412-0800: 0.936: [CMS-concurrent-preclean: 0.002/0.002 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+2020-10-25T11:42:55.412-0800: 0.936: [CMS-concurrent-abortable-preclean-start]
+2020-10-25T11:42:55.492-0800: 1.016: [GC (Allocation Failure) 2020-10-25T11:42:55.492-0800: 1.016: [ParNew2020-10-25T11:42:55.514-0800: 1.038: [CMS-concurrent-abortable-preclean: 0.002/0.102 secs] [Times: user=0.10 sys=0.01, real=0.10 secs] 
+: 314073K->34943K(314560K), 0.1039385 secs] 686628K->476279K(1013632K), 0.1041162 secs] [Times: user=0.22 sys=0.04, real=0.10 secs] 
+2020-10-25T11:42:55.596-0800: 1.120: [GC (CMS Final Remark) [YG occupancy: 35675 K (314560 K)]2020-10-25T11:42:55.596-0800: 1.121: [Rescan (parallel) , 0.0016535 secs]2020-10-25T11:42:55.598-0800: 1.122: [weak refs processing, 0.0000486 secs]2020-10-25T11:42:55.598-0800: 1.122: [class unloading, 0.0004237 secs]2020-10-25T11:42:55.599-0800: 1.123: [scrub symbol table, 0.0011644 secs]2020-10-25T11:42:55.600-0800: 1.124: [scrub string table, 0.0002152 secs][1 CMS-remark: 441335K(699072K)] 477010K(1013632K), 0.0037176 secs] [Times: user=0.01 sys=0.00, real=0.01 secs] 
+2020-10-25T11:42:55.600-0800: 1.124: [CMS-concurrent-sweep-start]
+Heap
+ par new generation   total 314560K, used 52388K [0x0000000780000000, 0x0000000795550000, 0x0000000795550000)
+  eden space 279616K,   6% used [0x0000000780000000, 0x0000000781109450, 0x0000000791110000)
+  from space 34944K,  99% used [0x0000000791110000, 0x000000079332ff48, 0x0000000793330000)
+  to   space 34944K,   0% used [0x0000000793330000, 0x0000000793330000, 0x0000000795550000)
+ concurrent mark-sweep generation total 699072K, used 379508K [0x0000000795550000, 0x00000007c0000000, 0x00000007c0000000)
+ Metaspace       used 2899K, capacity 4486K, committed 4864K, reserved 1056768K
+  class space    used 309K, capacity 386K, committed 512K, reserved 1048576K

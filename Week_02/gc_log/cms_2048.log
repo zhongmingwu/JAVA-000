@@ -1,0 +1,17 @@
+OpenJDK 64-Bit Server VM (25.265-b11) for bsd-amd64 JRE (Zulu 8.48.0.53-CA-macosx) (1.8.0_265-b11), built on Jul 28 2020 03:07:54 by "zulu_re" with gcc 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.11.00)
+Memory: 4k page, physical 16777216k(840924k free)
+
+/proc/meminfo:
+
+CommandLine flags: -XX:InitialHeapSize=2147483648 -XX:MaxHeapSize=2147483648 -XX:MaxNewSize=697933824 -XX:MaxTenuringThreshold=6 -XX:NewSize=697933824 -XX:OldPLABSize=16 -XX:OldSize=1395867648 -XX:+PrintGC -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseConcMarkSweepGC -XX:+UseParNewGC 
+2020-10-25T11:42:31.519-0800: 0.596: [GC (Allocation Failure) 2020-10-25T11:42:31.519-0800: 0.596: [ParNew: 545344K->68096K(613440K), 0.0667052 secs] 545344K->160656K(2029056K), 0.0668498 secs] [Times: user=0.11 sys=0.24, real=0.07 secs] 
+2020-10-25T11:42:31.746-0800: 0.823: [GC (Allocation Failure) 2020-10-25T11:42:31.746-0800: 0.823: [ParNew: 613440K->68096K(613440K), 0.0659602 secs] 706000K->283315K(2029056K), 0.0660790 secs] [Times: user=0.11 sys=0.23, real=0.07 secs] 
+2020-10-25T11:42:31.902-0800: 0.979: [GC (Allocation Failure) 2020-10-25T11:42:31.902-0800: 0.979: [ParNew: 613440K->68095K(613440K), 0.1208608 secs] 828659K->410563K(2029056K), 0.1209941 secs] [Times: user=0.33 sys=0.06, real=0.12 secs] 
+Heap
+ par new generation   total 613440K, used 605766K [0x0000000740000000, 0x0000000769990000, 0x0000000769990000)
+  eden space 545344K,  98% used [0x0000000740000000, 0x0000000760d11af0, 0x0000000761490000)
+  from space 68096K,  99% used [0x0000000765710000, 0x000000076998ff50, 0x0000000769990000)
+  to   space 68096K,   0% used [0x0000000761490000, 0x0000000761490000, 0x0000000765710000)
+ concurrent mark-sweep generation total 1415616K, used 342467K [0x0000000769990000, 0x00000007c0000000, 0x00000007c0000000)
+ Metaspace       used 2899K, capacity 4486K, committed 4864K, reserved 1056768K
+  class space    used 309K, capacity 386K, committed 512K, reserved 1048576K

@@ -1,0 +1,17 @@
+OpenJDK 64-Bit Server VM (25.265-b11) for bsd-amd64 JRE (Zulu 8.48.0.53-CA-macosx) (1.8.0_265-b11), built on Jul 28 2020 03:07:54 by "zulu_re" with gcc 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.11.00)
+Memory: 4k page, physical 16777216k(422884k free)
+
+/proc/meminfo:
+
+CommandLine flags: -XX:InitialHeapSize=4294967296 -XX:MaxHeapSize=4294967296 -XX:MaxNewSize=697933824 -XX:MaxTenuringThreshold=6 -XX:NewSize=697933824 -XX:OldPLABSize=16 -XX:OldSize=1395867648 -XX:+PrintGC -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseConcMarkSweepGC -XX:+UseParNewGC 
+2020-10-25T11:42:07.585-0800: 0.583: [GC (Allocation Failure) 2020-10-25T11:42:07.586-0800: 0.584: [ParNew: 545344K->68096K(613440K), 0.0822448 secs] 545344K->147557K(4126208K), 0.0825537 secs] [Times: user=0.11 sys=0.21, real=0.08 secs] 
+2020-10-25T11:42:07.841-0800: 0.839: [GC (Allocation Failure) 2020-10-25T11:42:07.841-0800: 0.839: [ParNew: 613440K->68095K(613440K), 0.1019732 secs] 692901K->280405K(4126208K), 0.1021042 secs] [Times: user=0.14 sys=0.21, real=0.10 secs] 
+2020-10-25T11:42:08.068-0800: 1.065: [GC (Allocation Failure) 2020-10-25T11:42:08.068-0800: 1.065: [ParNew: 613439K->68096K(613440K), 0.1223329 secs] 825749K->394031K(4126208K), 0.1224486 secs] [Times: user=0.43 sys=0.05, real=0.13 secs] 
+Heap
+ par new generation   total 613440K, used 90478K [0x00000006c0000000, 0x00000006e9990000, 0x00000006e9990000)
+  eden space 545344K,   4% used [0x00000006c0000000, 0x00000006c15db990, 0x00000006e1490000)
+  from space 68096K, 100% used [0x00000006e5710000, 0x00000006e9990000, 0x00000006e9990000)
+  to   space 68096K,   0% used [0x00000006e1490000, 0x00000006e1490000, 0x00000006e5710000)
+ concurrent mark-sweep generation total 3512768K, used 325935K [0x00000006e9990000, 0x00000007c0000000, 0x00000007c0000000)
+ Metaspace       used 2899K, capacity 4486K, committed 4864K, reserved 1056768K
+  class space    used 309K, capacity 386K, committed 512K, reserved 1048576K

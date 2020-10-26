@@ -581,6 +581,60 @@ Heap
 
 ###### 分析
 
+1. -XX:MaxNewSize=697933824
+   - Young区的大小最大为697933824 Bytes（665.6MB）
+2. -XX:MaxTenuringThreshold=6
+   - 新创建的对象在Young区每经历一次Young GC后存活下来，对象年龄都会+1（记录在对象头中）
+   - 如果某个存活对象在某次Young GC时的年龄是MaxTenuringThreshold，会自动晋升到Old区
+   - MaxTenuringThreshold只是一个参考值，通常会和TargetSurvivorRatio（默认值50）来动态调整晋升阈值
+     - 如果From区某个age的所有对象的总大小大于期望大小（From区大小 × TargetSurvivorRatio），重新计算阈值
+     - 新阈值 = min(age, MaxTenuringThreshold)
+3. -XX:OldPLABSize=16
+   - PLAB : Promotion Local Allocation Buffer
+   - PLAB是在Young GC的时候使用的，Young GC时存活对象会被拷贝到To区或者晋升到Old区
+   - 为了避免线程竞争（-XX:+UseParNewGC），每个GC线程都有2个PLAB，一个在TO区，一个在Old区
+     - TO区的空闲内存是连续的，因此GC线程在TO区的PLAB也是连续的块
+     - Old区采用的CMS，空闲内存是碎片的（CMS默认不会每次都压缩）
+   - Free list space(FLS)
+     - 内存管理器使用空闲块列表来管理碎片空间
+     - 可用空间的块按大小分组
+       - 这是常见设计，通过拆分和合并来提供尽量精准的服务
+   - 每个GC线程会按照不同的大小（<= 256 Heap Words，超过的部分从全局空间分配）预分配一定数量的块
+     - 具体每个大小分配多少块是按照统计数据得出的
+     - 预分配会发生在Young GC的开始
+   - OldPLABSize = CMSParPromoteBlocksToClaim
+     - 每个块大小的初始块数量
+     - 在每次Young GC后，会动态调整OldPLABSize（-XX:+ResizeOldPLAB）
+   - 在Young GC期间，如果特定大小的块不够用了，会触发refill（从全局空间申请跟Young GC开始的时候一样的块数量（特定大小），即FLS到PLAB，该过程是需要加锁的）
+     - 如果初始预估太少了，refill会很频繁，因为要加锁，所以性能可能会下降
+     - 可以通过-XX:+CMSOldPLABResizeQuicker优化，在Young GC中间调整PLAB大小，不需要得到真得不够用的时候才去调整
+4. -XX:+UseConcMarkSweepGC -XX:+UseParNewGC
+   - Old区用CMS回收
+   - Young区使用Parallel Copying Collector回收
+     - -XX:+UseParallelGC和-XX:+UseParNewGC的差异，可以参考下文引用
+
+PLAB
+> [Java GC, HotSpot's CMS promotion buffers](http://blog.ragozin.info/2011/11/java-gc-hotspots-cms-promotion-buffers.html)
+> [Java GC, HotSpot's CMS and heap fragmentation](http://blog.ragozin.info/2011/10/java-cg-hotspots-cms-and-heap.html)
+> [CMS heap fragmentation. Follow up 1](http://blog.ragozin.info/2011/10/cms-heap-fragmentation-follow-up-1.html)
+
+Let me summarize, how to reduce risk of concurrent mode and promotion failures using CMS collector.
+1. Provide CMS enough head room(lag between live data set and old space size), more free space – less risk of fragmentation. Remember any garbage collector need some extra space to work efficiently.
+2. Let CMS run continuously using initiating occupancy settings (you may want reduce number of concurrent threads though).
+3. If you still having problems – reduce old PLAB size.
+4. Avoid spurious allocation of very large objects in application (resize of large hash table is a good example). Regular allocation of large objects is ok, though.
+5. CPU shortage may leading to fragmentation of memory, this problem cannot be detected by normal monitoring (only by parsing GC logs).
+
+
+UseParNewGC
+[Difference between -XX:+UseParallelGC and -XX:+UseParNewGC](https://stackoverflow.com/questions/2101518/difference-between-xxuseparallelgc-and-xxuseparnewgc)
+[Garbage Collector Ergonomics](https://docs.oracle.com/javase/1.5.0/docs/guide/vm/gc-ergonomics.html)
+> The parallel scavenge collector (Enabled using -XX:UseParallelGC). This is like the previous parallel copying collector, but the algorithm is tuned for gigabyte heaps (over 10GB) on multi-CPU machines. This collection algorithm is designed to maximize throughput while minimizing pauses. It has an optional adaptive tuning policy which will automatically resize heap spaces.
+> From this information, it seems the main difference (apart from CMS cooperation) is that UseParallelGC supports ergonomics while UseParNewGC doesn't.
+
+Concurrent Mode Failure
+> At beginning  of each young GC, collector should ensure that there is enough free memory in old space to promote aged objects from young space. Modern CMS collector estimates size of objects to be promoted using statistics from previous collections. If old space does not have enough free bytes to hold estimated promotion amount, concurrent mode failure will be raise
+
 ##### 128m
 
 ###### 执行

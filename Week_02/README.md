@@ -920,8 +920,8 @@ Transfer/sec:      1.87MB
 
 > [Our Collectors](https://blogs.oracle.com/jonthecollector/our-collectors)
 >
-> 1) UseParNew and UseParallelGC both collect the young generation using
-> multiple GC threads. Which is faster?
+> **UseParNew and UseParallelGC both collect the young generation using
+> multiple GC threads. Which is faster?**
 >
 > There's no one correct answer for
 > this questions. Mostly they perform equally well, but I've seen one

@@ -657,7 +657,7 @@ Let me summarize, how to reduce risk of concurrent mode and promotion failures u
 
 #### G1
 
-**写不动了，后面自己找时间看一遍下面的资料**！！
+**写不动了，GC日志在gc_log目录，后面自己找时间看一遍G1相关的资料**！！
 
 1. JDK 9
    - [Java Platform, Standard Edition HotSpot Virtual Machine Garbage Collection Tuning Guide](https://docs.oracle.com/javase/9/gctuning/)

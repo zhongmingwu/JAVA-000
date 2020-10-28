@@ -1043,19 +1043,14 @@ Transfer/sec:      1.70MB
 
 #### 对比
 
-|      | SerialGC | ParallelGC | ConcMarkSweepGC | G1GC | ShenandoahGC | ZGC  |
-| ---- | -------- | ---------- | --------------- | ---- | ------------ | ---- |
-|      |          |            |                 |      |              |      |
-|      |          |            |                 |      |              |      |
-|      |          |            |                 |      |              |      |
-|      |          |            |                 |      |              |      |
-|      |          |            |                 |      |              |      |
-|      |          |            |                 |      |              |      |
-|      |          |            |                 |      |              |      |
-|      |          |            |                 |      |              |      |
-|      |          |            |                 |      |              |      |
+主要关注**Stable Longest Pause**和**Throughput Rate**
 
-
-
-根据上述自己对于1和2的演示，写一段对于不同 GC 的总结，提交到 Github
+| Collector       | Latency | Req/Sec | Stable Longest Pause | Throughput Rate | Note    |
+| --------------- | ------- | ------- | -------------------- | --------------- | ------- |
+| SerialGC        | 40.48ms | 1.64k   | 3.1ms                | 99.62%          |         |
+| ParallelGC      | 36.29ms | 1.61k   | 2.3ms                | 99.85%          |         |
+| ConcMarkSweepGC | 36.08ms | 1.67k   | 4.5ms                | 99.5%           |         |
+| G1GC            | 38.31ms | 1.52k   | 1.9ms                | 99.9%           | Default |
+| ShenandoahGC    | 38.12ms | 1.45k   | 1.2ms                | 99.93%          |         |
+| ZGC             | 61.54ms | 1.64k   | 0.56ms               | 99.94%          | Best    |
 

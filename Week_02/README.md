@@ -1054,3 +1054,132 @@ Transfer/sec:      1.70MB
 | ShenandoahGC    | 38.12ms | 1.45k   | 1.2ms                | 99.93%          |         |
 | ZGC             | 61.54ms | 1.64k   | 0.56ms               | 99.94%          | Best    |
 
+# 周六
+
+## 第1题
+
+### 描述
+
+写一段代码，使用HttpClient或OkHttp访问http://localhost:8801，代码提交到 github
+
+### 解答
+
+#### Source Code
+
+##### HttpServerHandler
+
+```java
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.*;
+
+public class HttpServerHandler extends SimpleChannelInboundHandler<HttpObject> {
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
+        if (msg instanceof HttpRequest) {
+            HttpRequest request = (HttpRequest) msg;
+            FullHttpResponse response = new DefaultFullHttpResponse(
+                    request.protocolVersion(), HttpResponseStatus.OK,
+                    Unpooled.wrappedBuffer("Hello Netty!".getBytes()));
+            response.headers()
+                    .set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN)
+                    .setInt(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+            ctx.write(response);
+        }
+    }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        ctx.flush();
+    }
+}
+```
+
+##### HttpServer
+
+```java
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.HttpServerExpectContinueHandler;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
+
+public class HttpServer {
+    public static void main(String[] args) throws InterruptedException {
+        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        try {
+            ServerBootstrap bootstrap = new ServerBootstrap();
+            bootstrap.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .handler(new LoggingHandler(LogLevel.INFO))
+                    .childHandler(new ChannelInitializer<Channel>() {
+                        @Override
+                        protected void initChannel(Channel ch) throws Exception {
+                            ChannelPipeline pipeline = ch.pipeline();
+                            pipeline.addLast(new HttpServerCodec());
+                            pipeline.addLast(new HttpServerExpectContinueHandler());
+                            pipeline.addLast(new HttpServerHandler());
+                        }
+                    });
+            Channel channel = bootstrap.bind(8081).sync().channel();
+            channel.closeFuture().sync();
+        } finally {
+            bossGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully();
+        }
+    }
+}
+```
+
+##### HttpClient
+
+```java
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
+import java.io.IOException;
+import java.util.Objects;
+
+public class HttpClient {
+    public static void main(String[] args) throws IOException {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url("http://localhost:8081").build();
+        try (Response response = client.newCall(request).execute()) {
+            System.out.println(Objects.requireNonNull(response.body()).string());
+        }
+    }
+}
+```
+
+#### Run Time
+
+##### HttpServer
+
+```
+Oct 28, 2020 3:28:51 PM io.netty.handler.logging.LoggingHandler channelRegistered
+INFO: [id: 0x96584178] REGISTERED
+Oct 28, 2020 3:28:51 PM io.netty.handler.logging.LoggingHandler bind
+INFO: [id: 0x96584178] BIND: 0.0.0.0/0.0.0.0:8081
+Oct 28, 2020 3:28:51 PM io.netty.handler.logging.LoggingHandler channelActive
+INFO: [id: 0x96584178, L:/0:0:0:0:0:0:0:0:8081] ACTIVE
+Oct 28, 2020 3:28:54 PM io.netty.handler.logging.LoggingHandler channelRead
+INFO: [id: 0x96584178, L:/0:0:0:0:0:0:0:0:8081] READ: [id: 0x5d098b78, L:/127.0.0.1:8081 - R:/127.0.0.1:49289]
+Oct 28, 2020 3:28:54 PM io.netty.handler.logging.LoggingHandler channelReadComplete
+INFO: [id: 0x96584178, L:/0:0:0:0:0:0:0:0:8081] READ COMPLETE
+```
+
+##### HttpClient
+
+```
+Hello Netty!
+```
+

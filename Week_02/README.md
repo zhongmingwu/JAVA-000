@@ -91,12 +91,11 @@ Heap
 
      - 依赖UseCompressedOops
 
-       - > UseCompressedOops must be on for UseCompressedClassPointers to be on.
+       - UseCompressedOops must be on for UseCompressedClassPointers to be on.
 
 4. -XX:+UseParallelGC
-
-   - 默认采用并行GC
-
+- 默认采用并行GC
+  
 5. 总共发生了9次Young GC和3次Full GC，并且没有连续的Full GC，下面仅分析第1次Young GC和第1次Full GC
 
 6. Young GC
@@ -179,15 +178,15 @@ Heap
 
 **GC Statistics**
 
-![image-20201024212236473](image/image-20201024212236473.png)
+![image-20201024212236473](image/gc_log/image-20201024212236473.png)
 
 **Object Stats**
 
-![image-20201024212348481](image/image-20201024212348481.png)
+![image-20201024212348481](image/gc_log/image-20201024212348481.png)
 
 **GC Causes**
 
-![image-20201024212438269](image/image-20201024212438269.png)
+![image-20201024212438269](image/gc_log/image-20201024212438269.png)
 
 **user sys real**
 
@@ -303,19 +302,19 @@ Heap
 
 Full GC基本没有回收多少空间
 
-![image-20201024214518643](image/image-20201024214518643.png)
+![image-20201024214518643](image/gc_log/image-20201024214518643.png)
 
 **GC Statistics**
 
-![image-20201024214209252](image/image-20201024214209252.png)
+![image-20201024214209252](image/gc_log/image-20201024214209252.png)
 
 **Object Stats**
 
-![image-20201024214258824](image/image-20201024214258824.png)
+![image-20201024214258824](image/gc_log/image-20201024214258824.png)
 
 **GC Causes**
 
-![image-20201024214335398](image/image-20201024214335398.png)
+![image-20201024214335398](image/gc_log/image-20201024214335398.png)
 
 ##### 对比
 
@@ -783,4 +782,280 @@ Heap
 使用压测工具(wrk或sb)，演练gateway-server-0.0.1-SNAPSHOT.jar 示例。
 
 ### 解答
+
+#### backlog
+
+> To handle the initial connection burst the server's listen(2) backlog should be greater than the number of concurrent connections being tested
+
+```
+$ sysctl -a | grep backlog
+net.inet.tcp.fastopen_backlog: 10
+```
+
+#### Java Version
+
+```
+$ java -version
+openjdk version "15" 2020-09-15
+OpenJDK Runtime Environment Zulu15.27+17-CA (build 15+36)
+OpenJDK 64-Bit Server VM Zulu15.27+17-CA (build 15+36, mixed mode, sharing)
+```
+
+#### 对象生命周期
+
+大多都是短命小对象，基本只有Young GC
+
+#### SerialGC
+
+```
+$ java -jar -Xms1024m -Xmx1024m -XX:+UseSerialGC gateway-server-0.0.1-SNAPSHOT.jar
+```
+
+##### wrk
+
+```
+$ wrk -t10 -c200 -d100s http://localhost:8088/api/hello
+Running 2m test @ http://localhost:8088/api/hello
+  10 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    40.48ms  120.24ms   1.59s    93.62%
+    Req/Sec     1.64k   626.79     5.12k    67.78%
+  1521236 requests in 1.67m, 181.62MB read
+  Socket errors: connect 0, read 101, write 0, timeout 0
+Requests/sec:  15196.90
+Transfer/sec:      1.81MB
+```
+
+##### jfr
+
+###### GC Configuration
+
+单GC线程回收（STW）
+
+![image-20201028094046926](image/gc_performance/image-20201028094046926.png)
+
+###### Live Objects
+
+存活对象极少，且都是小对象，无法晋升到Old区，进一步触发Full GC
+
+![image-20201028094319429](image/gc_performance/image-20201028094319429.png)
+
+###### Garbage Collections
+
+最大停顿41.8ms，后期停顿稳定在3.1ms内，应用时间占比为99.62%，但内存没有得到充分利用
+
+![image-20201028094619469](image/gc_performance/image-20201028094619469.png)
+
+#### ParallelGC
+
+```
+$ java -jar -Xms1024m -Xmx1024m -XX:+UseParallelGC gateway-server-0.0.1-SNAPSHOT.jar
+```
+
+##### wrk
+
+```
+$ wrk -t10 -c200 -d100s http://localhost:8088/api/hello
+Running 2m test @ http://localhost:8088/api/hello
+  10 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    36.29ms   73.36ms 979.67ms   89.70%
+    Req/Sec     1.61k   655.25     4.08k    70.57%
+  1509357 requests in 1.67m, 180.20MB read
+  Socket errors: connect 0, read 89, write 0, timeout 0
+Requests/sec:  15078.68
+Transfer/sec:      1.80MB
+```
+
+##### jfr
+
+###### GC Configuration
+
+8个并行GC线程
+
+![image-20201028095104660](image/gc_performance/image-20201028095104660.png)
+
+###### Garbage Collections
+
+最大停顿10.5ms，后期停顿稳定在2.3ms内，应用时间占比为99.85%，同样内存也没有得到充分利用
+
+![image-20201028095259191](image/gc_performance/image-20201028095259191.png)
+
+#### ConcMarkSweepGC
+
+```
+$ sdk default java 8.0.265-zulu
+$ java -jar -Xms1024m -Xmx1024m -XX:+UseConcMarkSweepGC -XX:+UnlockCommercialFeatures -XX:+FlightRecorder gateway-server-0.0.1-SNAPSHOT.jar
+$ sdk default java 15.0.0-zulu
+```
+
+##### wrk
+
+```
+$ wrk -t10 -c200 -d100s http://localhost:8088/api/hello
+Running 2m test @ http://localhost:8088/api/hello
+  10 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    36.08ms   79.83ms 853.02ms   91.03%
+    Req/Sec     1.67k   664.66     3.70k    70.22%
+  1564232 requests in 1.67m, 186.75MB read
+  Socket errors: connect 0, read 120, write 9, timeout 0
+Requests/sec:  15626.27
+Transfer/sec:      1.87MB
+```
+
+##### jfr
+
+###### GC Configuration
+
+8个并行GC线程（用于GC的STW阶段，如CMS的Initial Mark和Final Remark阶段），2个并发线程
+
+![image-20201028100518639](image/gc_performance/image-20201028100518639.png)
+
+###### Garbage Collections
+
+最大停顿41.3ms，后期停顿稳定在4.5ms内，应用时间占比为99.5%，同样内存也没有得到充分利用
+
+![image-20201028100853458](image/gc_performance/image-20201028100853458.png)
+
+> [Our Collectors](https://blogs.oracle.com/jonthecollector/our-collectors)
+>
+> 1) UseParNew and UseParallelGC both collect the young generation using
+> multiple GC threads. Which is faster?
+>
+> There's no one correct answer for
+> this questions. Mostly they perform equally well, but I've seen one
+> do better than the other in different situations. If you want to use
+> GC ergonomics, it is only supported by UseParallelGC (and UseParallelOldGC)
+> so that's what you'll have to use.
+
+#### G1GC
+
+```
+$ java -jar -Xms1024m -Xmx1024m -XX:+UseG1GC gateway-server-0.0.1-SNAPSHOT.jar
+```
+
+##### wrk
+
+```
+$ wrk -t10 -c200 -d100s http://localhost:8088/api/hello
+Running 2m test @ http://localhost:8088/api/hello
+  10 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    38.31ms   76.78ms   1.04s    89.48%
+    Req/Sec     1.52k   674.18     4.83k    65.77%
+  1436514 requests in 1.67m, 171.50MB read
+  Socket errors: connect 0, read 127, write 1, timeout 0
+Requests/sec:  14351.43
+Transfer/sec:      1.71MB
+```
+
+##### jfr
+
+###### GC Configuration
+
+8个并行GC线程，2个并发线程，GCTimeRatio为12，目标吞吐率为93.3%，Young区1.3MB（划分Region）
+
+![image-20201028101737402](image/gc_performance/image-20201028101737402.png)
+
+> [Java Platform, Standard Edition HotSpot Virtual Machine Garbage Collection Tuning Guide](https://docs.oracle.com/javase/9/gctuning/garbage-first-garbage-collector-tuning.htm)
+>
+> **Tuning for Heap Size**
+>
+> Like other collectors, G1 aims to size the heap so that the time spent in garbage collection is below the ratio determined by the `-XX:GCTimeRatio` option. Adjust this option to make G1 meet your requirements.
+
+###### Garbage Collections
+
+1. 最大停顿24.8ms，后期停顿稳定在1.9ms内，应用时间占比为99.9%
+2. 相比于其它采用固定分代的垃圾回收器，内存利用效率更高，停顿更短（且频率更低），吞吐率更高
+
+![image-20201028102110720](image/gc_performance/image-20201028102110720.png)
+
+#### ShenandoahGC
+
+```
+$ java -jar -Xms1024m -Xmx1024m -XX:+UseShenandoahGC gateway-server-0.0.1-SNAPSHOT.jar
+```
+
+##### wrk
+
+```
+$ wrk -t10 -c200 -d100s http://localhost:8088/api/hello
+Running 2m test @ http://localhost:8088/api/hello
+  10 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    38.12ms   72.82ms 913.78ms   88.92%
+    Req/Sec     1.45k   658.66     5.53k    64.42%
+  1365435 requests in 1.67m, 163.02MB read
+  Socket errors: connect 0, read 137, write 0, timeout 0
+Requests/sec:  13640.83
+Transfer/sec:      1.63MB
+```
+
+##### jfr
+
+###### GC Configuration
+
+4个并行GC线程，2个并发线程
+
+![image-20201028102854414](image/gc_performance/image-20201028102854414.png)
+
+###### Garbage Collections
+
+最大停顿35.0ms，后期停顿稳定在1.2ms内，应用时间占比为99.93%，同样基于Region，本次测试略强于G1
+
+![image-20201028103203008](image/gc_performance/image-20201028103203008.png)
+
+#### ZGC
+
+```
+$ java -jar -Xms1024m -Xmx1024m -XX:+UseZGC gateway-server-0.0.1-SNAPSHOT.jar
+```
+
+##### wrk
+
+```
+$ wrk -t10 -c200 -d100s http://localhost:8088/api/hello
+Running 2m test @ http://localhost:8088/api/hello
+  10 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    61.54ms  138.33ms   1.31s    89.58%
+    Req/Sec     1.64k   698.33     5.24k    71.55%
+  1425679 requests in 1.67m, 170.21MB read
+  Socket errors: connect 0, read 180, write 1, timeout 0
+Requests/sec:  14243.52
+Transfer/sec:      1.70MB
+```
+
+##### jfr
+
+###### GC Configuration
+
+5个并行GC线程，1个并发线程，对象指针压缩没有开启
+
+![image-20201028103754419](image/gc_performance/image-20201028103754419.png)
+
+###### Garbage Collections
+
+最大停顿4.3ms，后期停顿稳定在0.56ms内，应用时间占比为99.94%，本次测试略强于G1和ShenandoahGC
+
+![image-20201028103956689](image/gc_performance/image-20201028103956689.png)
+
+#### 对比
+
+|      | SerialGC | ParallelGC | ConcMarkSweepGC | G1GC | ShenandoahGC | ZGC  |
+| ---- | -------- | ---------- | --------------- | ---- | ------------ | ---- |
+|      |          |            |                 |      |              |      |
+|      |          |            |                 |      |              |      |
+|      |          |            |                 |      |              |      |
+|      |          |            |                 |      |              |      |
+|      |          |            |                 |      |              |      |
+|      |          |            |                 |      |              |      |
+|      |          |            |                 |      |              |      |
+|      |          |            |                 |      |              |      |
+|      |          |            |                 |      |              |      |
+
+
+
+根据上述自己对于1和2的演示，写一段对于不同 GC 的总结，提交到 Github
 

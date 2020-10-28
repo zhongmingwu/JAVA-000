@@ -1,0 +1,17 @@
+OpenJDK 64-Bit Server VM (25.265-b11) for bsd-amd64 JRE (Zulu 8.48.0.53-CA-macosx) (1.8.0_265-b11), built on Jul 28 2020 03:07:54 by "zulu_re" with gcc 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.11.00)
+Memory: 4k page, physical 16777216k(80836k free)
+
+/proc/meminfo:
+
+CommandLine flags: -XX:InitialHeapSize=4294967296 -XX:MaxHeapSize=4294967296 -XX:+PrintGC -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseG1GC 
+2020-10-28T17:53:16.758-0800: 0.252: [GC pause (G1 Evacuation Pause) (young) 204M->74377K(4096M), 0.0294914 secs]
+2020-10-28T17:53:16.822-0800: 0.316: [GC pause (G1 Evacuation Pause) (young) 250M->130M(4096M), 0.0232729 secs]
+2020-10-28T17:53:16.870-0800: 0.365: [GC pause (G1 Evacuation Pause) (young) 308M->185M(4096M), 0.0215676 secs]
+2020-10-28T17:53:16.916-0800: 0.411: [GC pause (G1 Evacuation Pause) (young) 363M->241M(4096M), 0.0240033 secs]
+2020-10-28T17:53:16.967-0800: 0.461: [GC pause (G1 Evacuation Pause) (young) 419M->293M(4096M), 0.0458920 secs]
+2020-10-28T17:53:17.054-0800: 0.548: [GC pause (G1 Evacuation Pause) (young) 471M->347M(4096M), 0.0425497 secs]
+2020-10-28T17:53:17.152-0800: 0.647: [GC pause (G1 Evacuation Pause) (young) 525M->401M(4096M), 0.0410158 secs]
+2020-10-28T17:53:17.253-0800: 0.747: [GC pause (G1 Evacuation Pause) (young) 583M->459M(4096M), 0.0480223 secs]
+2020-10-28T17:53:17.382-0800: 0.877: [GC pause (G1 Evacuation Pause) (young) 683M->528M(4096M), 0.0667054 secs]
+2020-10-28T17:53:17.504-0800: 0.998: [GC pause (G1 Evacuation Pause) (young) 758M->602M(4096M), 0.0670678 secs]
+2020-10-28T17:53:17.636-0800: 1.130: [GC pause (G1 Evacuation Pause) (young) 852M->684M(4096M), 0.0644835 secs]

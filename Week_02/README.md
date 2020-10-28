@@ -21,7 +21,7 @@ OpenJDK 64-Bit Server VM (Zulu 8.48.0.53-CA-macosx) (build 25.265-b11, mixed mod
 $ javac GCLogAnalysis.java
 ```
 
-#### 并行
+#### ParallelGC
 
 ##### default
 
@@ -332,7 +332,7 @@ Full GC基本没有回收多少空间
 | (1- pause) * log(creation / promotion) | 0.5450      | 0.7066     | 0.4494      | 0.3275      | 0.2579      | -        |
 | 备注                                   |             | 综合最佳   |             |             |             | OOM      |
 
-#### 串行
+#### SerialGC
 
 ##### default
 
@@ -517,7 +517,7 @@ Heap
 | (1- pause) * log(creation / promotion) | 0.1853      | 0.5841    | 0.3460    | 0.2555  | 0.3142  | 0.1893  | -      |
 | 备注                                   |             | 综合最佳  |           |         |         |         | OOM    |
 
-#### CMS
+#### ConcMarkSweepGC
 
 ##### default
 
@@ -775,6 +775,41 @@ Heap
 
 #### G1
 
+##### default
+
+###### 执行
+
+```
+$ java -XX:+PrintGC -XX:+PrintGCDateStamps -XX:+UseG1GC -Xloggc:gc_log/g1_default.log GCLogAnalysis
+正在执行...
+执行结束!共生成对象次数:6967
+```
+
+###### 日志
+
+###### 分析
+
+##### 对比
+
+|                                        | default | 4096m | 2048m | 1024m | 512m | 256m |
+| -------------------------------------- | ------- | ----- | ----- | ----- | ---- | ---- |
+| Create Objects                         | 6967    | 8009  | 7490  | 9415  | 9818 | -    |
+| Young GC count                         |         |       |       |       |      |      |
+| Young GC min/max time (ms)             |         |       |       |       |      |      |
+| Initial Mark count                     |         |       |       |       |      |      |
+| Initial Mark min/max time (ms)         |         |       |       |       |      |      |
+| Final Remark count                     |         |       |       |       |      |      |
+| Final Remark min/max time (ms)         |         |       |       |       |      |      |
+| Full GC Count                          |         |       |       |       |      |      |
+| Full GC min/max time (ms)              |         |       |       |       |      |      |
+| Pause total time (ms)                  |         |       |       |       |      |      |
+| Avg creation rate (gb/sec)             |         |       |       |       |      |      |
+| Avg promotion rate (mb/sec)            |         |       |       |       |      |      |
+| (1- pause) * log(creation / promotion) |         |       |       |       |      |      |
+| 备注                                   |         |       |       |       |      | OOM  |
+
+
+
 ## 第2题
 
 ### 描述
@@ -971,7 +1006,7 @@ Transfer/sec:      1.71MB
 
 ![image-20201028102110720](image/gc_performance/image-20201028102110720.png)
 
-#### ShenandoahGC
+#### ShenandoahGC -- Red Hat
 
 ```
 $ java -jar -Xms1024m -Xmx1024m -XX:+UseShenandoahGC gateway-server-0.0.1-SNAPSHOT.jar
@@ -1006,7 +1041,7 @@ Transfer/sec:      1.63MB
 
 ![image-20201028103203008](image/gc_performance/image-20201028103203008.png)
 
-#### ZGC
+#### ZGC -- Oracle
 
 ```
 $ java -jar -Xms1024m -Xmx1024m -XX:+UseZGC gateway-server-0.0.1-SNAPSHOT.jar
@@ -1031,7 +1066,7 @@ Transfer/sec:      1.70MB
 
 ###### GC Configuration
 
-5个并行GC线程，1个并发线程，对象指针压缩没有开启
+5个并行GC线程，1个并发线程，ZGC使用的是染色指针（不支持压缩指针）
 
 ![image-20201028103754419](image/gc_performance/image-20201028103754419.png)
 

@@ -836,7 +836,7 @@ Transfer/sec:      1.81MB
 
 ###### Live Objects
 
-存活对象极少，且都是小对象，无法晋升到Old区，进一步触发Full GC
+存活对象极少，且都是小对象，无法晋升到Old区（即无法进一步触发Full GC）
 
 ![image-20201028094319429](image/gc_performance/image-20201028094319429.png)
 

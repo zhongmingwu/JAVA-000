@@ -23,6 +23,6 @@ public class GatewayTest {
         TimeUnit.SECONDS.sleep(1);
 
         pool.submit(new Client(Constant.GATEWAY_URL));
-        Thread.currentThread().join();
+        Thread.currentThread().join(5000);
     }
 }

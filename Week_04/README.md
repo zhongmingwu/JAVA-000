@@ -128,4 +128,48 @@ public void m_2_notification() throws InterruptedException {
 invoked_method=[m_2_notification], elapsed_ms=1049
 ```
 
+### m_3_interrupt
+```java
+@Test
+public void m_3_interrupt() {
+    name = getMethodName();
+
+    Thread thread = Thread.currentThread();
+    new Thread(() -> {
+        try {
+            TimeUnit.MILLISECONDS.sleep(SLEEP_MS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        result = FibonacciUtil.fibonacci(N);
+        System.out.printf("[%s] interrupt [%s]\n", Thread.currentThread().getName(), thread.getName());
+        thread.interrupt();
+    }, name).start();
+
+    String threadName = Thread.currentThread().getName();
+    System.out.printf("[%s] try to occupy monitor lock\n", threadName);
+    synchronized (this) {
+        System.out.printf("[%s] occupies monitor lock successfully\n", threadName);
+        try {
+            System.out.printf("[%s] release monitor lock and wait, isInterrupted=%s\n", threadName,
+                    Thread.currentThread().isInterrupted());
+            wait(); // throw InterruptedException
+        } catch (InterruptedException e) {
+            System.out.printf("[%s] throw InterruptedException, isInterrupted=%s\n", threadName,
+                    Thread.currentThread().isInterrupted());
+        }
+    }
+}
+```
+```
+[main] try to occupy monitor lock
+[main] occupies monitor lock successfully
+[main] release monitor lock and wait, isInterrupted=false
+[m_3_interrupt] is starting...
+[m_3_interrupt] is done!
+[m_3_interrupt] interrupt [main]
+[main] throw InterruptedException, isInterrupted=false
+invoked_method=[m_3_interrupt], elapsed_ms=553
+```
+
 # 知识梳理

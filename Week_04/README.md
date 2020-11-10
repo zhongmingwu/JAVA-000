@@ -172,4 +172,38 @@ public void m_3_interrupt() {
 invoked_method=[m_3_interrupt], elapsed_ms=553
 ```
 
+### m_4_park
+```java
+@Test
+public void m_4_park() {
+    name = getMethodName();
+
+    Thread thread = Thread.currentThread();
+    new Thread(() -> {
+        try {
+            TimeUnit.MILLISECONDS.sleep(SLEEP_MS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        result = FibonacciUtil.fibonacci(N);
+        String threadName = Thread.currentThread().getName();
+        System.out.printf("[%s] try to unpark [%s]\n", threadName, thread.getName());
+        LockSupport.unpark(thread);
+    }, name).start();
+
+    String threadName = Thread.currentThread().getName();
+    System.out.printf("[%s] is going to park\n", threadName);
+    LockSupport.park();
+    System.out.printf("[%s] is awakened\n", threadName);
+}
+```
+```
+[main] is going to park
+[m_4_park] is starting...
+[m_4_park] is done!
+[m_4_park] try to unpark [main]
+[main] is awakened
+invoked_method=[m_4_park], elapsed_ms=553
+```
+
 # 知识梳理

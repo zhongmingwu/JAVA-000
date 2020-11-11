@@ -308,3 +308,4 @@ thread=[ForkJoinPool.commonPool-worker-1], invoked_method=[m_13_completableFutur
 ```
 
 # 知识梳理
+![java-training-camp-concurrent-compressed.png](image/java-training-camp-concurrent-compressed.png)

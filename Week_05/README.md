@@ -1,7 +1,7 @@
 # 作业1
 
 ## 描述
-写代码实现Spring Bean的装配，方式越多越好（XML、Annotation 都可以）, 提交到 Github。
+写代码实现Spring Bean的装配，方式越多越好（XML、Annotation 都可以）, 提交到Github。
 
 ## 解答
 1. [spring-configuration](https://github.com/zhongmingwu/java-training-camp/tree/main/week05/spring-configuration)
@@ -12,7 +12,7 @@
 # 作业2
 
 ## 描述
-给前面课程提供的Student/Klass/School实现自动配置和 Starter。
+给前面课程提供的Student/Klass/School实现自动配置和Starter。
 
 ## 解答
 [spring-boot-starter](https://github.com/zhongmingwu/java-training-camp/tree/main/week05/spring-boot-starter)

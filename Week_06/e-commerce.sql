@@ -1,11 +1,7 @@
-## e_commerce
-```sql
+--
 CREATE DATABASE IF NOT EXISTS `e_commerce` DEFAULT CHARACTER SET utf8mb4;
 USE `e_commerce`;
-```
-
-## user
-```sql
+--
 CREATE TABLE IF NOT EXISTS `user` (
     `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(32) NOT NULL,
@@ -17,10 +13,7 @@ CREATE TABLE IF NOT EXISTS `user` (
     PRIMARY KEY (`id`),
     KEY `idx_ctime` (`creat_time`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4;
-```
-
-## address
-```sql
+--
 CREATE TABLE IF NOT EXISTS `address` (
     `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
     `user_id` BIGINT(20) NOT NULL,
@@ -31,10 +24,7 @@ CREATE TABLE IF NOT EXISTS `address` (
     PRIMARY KEY (`id`),
     KEY `idx_uid_ctime` (`user_id`, `creat_time`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4;
-```
-
-## bank_card
-```sql
+--
 CREATE TABLE IF NOT EXISTS `bank_card` (
     `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
     `user_id` BIGINT(20) NOT NULL,
@@ -46,9 +36,7 @@ CREATE TABLE IF NOT EXISTS `bank_card` (
     PRIMARY KEY (`id`),
     KEY `idx_uid_ctime` (`user_id`, `creat_time`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4;
-```
-## product
-```sql
+--
 CREATE TABLE IF NOT EXISTS `product` (
     `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(32) NOT NULL,
@@ -60,9 +48,7 @@ CREATE TABLE IF NOT EXISTS `product` (
     PRIMARY KEY (`id`),
     KEY `idx_ctime` (`creat_time`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4;
-```
-## order
-```sql
+--
 CREATE TABLE IF NOT EXISTS `order` (
     `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
     `user_id` BIGINT(20) NOT NULL,
@@ -80,4 +66,3 @@ CREATE TABLE IF NOT EXISTS `order` (
     KEY `idx_pid_ctime` (`product_id`, `creat_time`),
     KEY `idx_ctime` (`creat_time`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4;
-```

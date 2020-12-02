@@ -1,0 +1,32 @@
+version: '2'
+
+services:
+  mysql_master:
+    build:
+      context: .
+      dockerfile: master/Dockerfile
+    environment:
+      - "MYSQL_ROOT_PASSWORD=root"
+    ports:
+      - "13306:3306"
+    restart: always
+    hostname: mysql_master
+    networks:
+      - docker_bridge
+
+  mysql_slave:
+    build:
+      context: .
+      dockerfile: slave/Dockerfile
+    environment:
+      - "MYSQL_ROOT_PASSWORD=root"
+    ports:
+      - "23306:3306"
+    restart: always
+    hostname: mysql_slave
+    networks:
+      - docker_bridge
+
+networks:
+  docker_bridge:
+    driver: bridge

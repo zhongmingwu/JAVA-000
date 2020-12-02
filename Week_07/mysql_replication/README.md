@@ -8,11 +8,14 @@ $ tree
 ├── master
 │   ├── Dockerfile
 │   └── my.cnf
-└── slave
+├── slave_1
+│   ├── Dockerfile
+│   └── my.cnf
+└── slave_2
     ├── Dockerfile
     └── my.cnf
 
-2 directories, 6 files
+3 directories, 8 files
 ```
 
 ## 1.1 docker-compose.yml
@@ -34,16 +37,29 @@ services:
     networks:
       - docker_bridge
 
-  mysql_slave:
+  mysql_slave_1:
     build:
       context: .
-      dockerfile: slave/Dockerfile
+      dockerfile: slave_1/Dockerfile
     environment:
       - "MYSQL_ROOT_PASSWORD=root"
     ports:
       - "23306:3306"
     restart: always
-    hostname: mysql_slave
+    hostname: mysql_slave_1
+    networks:
+      - docker_bridge
+
+  mysql_slave_2:
+    build:
+      context: .
+      dockerfile: slave_2/Dockerfile
+    environment:
+      - "MYSQL_ROOT_PASSWORD=root"
+    ports:
+      - "33306:3306"
+    restart: always
+    hostname: mysql_slave_2
     networks:
       - docker_bridge
 
@@ -52,35 +68,59 @@ networks:
     driver: bridge
 ```
 
-## 1.2 master/Dockerfile
+## 1.2 master
+
+### 1.2.1 Dockerfile
 
 ```dockerfile
 FROM mysql:5.7
 ADD ./master/my.cnf /etc/mysql/my.cnf
 ```
 
-## 1.3 master/my.cnf
+### 1.2.2 my.cnf
 
-```cnf
+```mysql
 [mysqld]
-server_id=1
+server_id=10
 log-bin=master_bin
 ```
 
-## 1.4 slave/Dockerfile
+## 1.3 slave_1
+
+### 1.3.1 Dockerfile
 
 ```dockerfile
 FROM mysql:5.7
-ADD ./slave/my.cnf /etc/mysql/my.cnf
+ADD ./slave_1/my.cnf /etc/mysql/my.cnf
 ```
 
-## 1.5 slave/my.cnf
+### 1.3.2 my.cnf
 
-```cnf
+```mysql
 [mysqld]
-server_id=2
-log-bin=slave_bin
-relay_log=slave_relay_bin
+server_id=21
+log-bin=slave_1_bin
+relay_log=slave_1_relay_bin
+log_slave_updates=1
+read_only=1
+```
+
+## 1.4 slave_2
+
+### 1.4.1 Dockerfile
+
+```dockerfile
+FROM mysql:5.7
+ADD ./slave_2/my.cnf /etc/mysql/my.cnf
+```
+
+### 1.4.2 my.cnf
+
+```mysql
+[mysqld]
+server_id=22
+log-bin=slave_2_bin
+relay_log=slave_2_relay_bin
 log_slave_updates=1
 read_only=1
 ```
@@ -96,28 +136,38 @@ Building mysql_master
 Step 1/2 : FROM mysql:5.7
  ---> ae0658fdbad5
 Step 2/2 : ADD ./master/my.cnf /etc/mysql/my.cnf
- ---> aca797b87d2d
+ ---> c40edb63fbff
 
-Successfully built aca797b87d2d
+Successfully built c40edb63fbff
 Successfully tagged mysql_replication_mysql_master:latest
-Building mysql_slave
+Building mysql_slave_1
 Step 1/2 : FROM mysql:5.7
  ---> ae0658fdbad5
-Step 2/2 : ADD ./slave/my.cnf /etc/mysql/my.cnf
- ---> 32c306b1afee
+Step 2/2 : ADD ./slave_1/my.cnf /etc/mysql/my.cnf
+ ---> c87cb498164a
 
-Successfully built 32c306b1afee
-Successfully tagged mysql_replication_mysql_slave:latest
-Creating mysql_replication_mysql_slave_1  ... done
-Creating mysql_replication_mysql_master_1 ... done
+Successfully built c87cb498164a
+Successfully tagged mysql_replication_mysql_slave_1:latest
+Building mysql_slave_2
+Step 1/2 : FROM mysql:5.7
+ ---> ae0658fdbad5
+Step 2/2 : ADD ./slave_2/my.cnf /etc/mysql/my.cnf
+ ---> fb50987331eb
+
+Successfully built fb50987331eb
+Successfully tagged mysql_replication_mysql_slave_2:latest
+Creating mysql_replication_mysql_master_1  ... done
+Creating mysql_replication_mysql_slave_1_1 ... done
+Creating mysql_replication_mysql_slave_2_1 ... done
 ```
 
 ```bash
 $ docker-compose ps -a
-              Name                           Command             State                 Ports
------------------------------------------------------------------------------------------------------------
-mysql_replication_mysql_master_1   docker-entrypoint.sh mysqld   Up      0.0.0.0:13306->3306/tcp, 33060/tcp
-mysql_replication_mysql_slave_1    docker-entrypoint.sh mysqld   Up      0.0.0.0:23306->3306/tcp, 33060/tcp
+              Name                            Command             State                 Ports
+------------------------------------------------------------------------------------------------------------
+mysql_replication_mysql_master_1    docker-entrypoint.sh mysqld   Up      0.0.0.0:13306->3306/tcp, 33060/tcp
+mysql_replication_mysql_slave_1_1   docker-entrypoint.sh mysqld   Up      0.0.0.0:23306->3306/tcp, 33060/tcp
+mysql_replication_mysql_slave_2_1   docker-entrypoint.sh mysqld   Up      0.0.0.0:33306->3306/tcp, 33060/tcp
 ```
 
 ## 2.2 network
@@ -127,7 +177,7 @@ $ docker network ls
 NETWORK ID          NAME                              DRIVER              SCOPE
 11fbc12a2bfd        bridge                            bridge              local
 07b11c107114        host                              host                local
-fdde7e7f1956        mysql_replication_docker_bridge   bridge              local
+042b60ebf260        mysql_replication_docker_bridge   bridge              local
 b6feea96fd9b        none                              null                local
 ```
 
@@ -136,8 +186,8 @@ $ docker inspect mysql_replication_docker_bridge
 [
     {
         "Name": "mysql_replication_docker_bridge",
-        "Id": "fdde7e7f1956f0bf8da61ff26430622f04ba0e79db316ccb9769f36beaff6c66",
-        "Created": "2020-12-02T08:44:47.6879786Z",
+        "Id": "042b60ebf2608f414f740dd72d9affab0d9b5a9eb0849072e2463ab24d99adbc",
+        "Created": "2020-12-02T15:30:33.1309832Z",
         "Scope": "local",
         "Driver": "bridge",
         "EnableIPv6": false,
@@ -146,8 +196,8 @@ $ docker inspect mysql_replication_docker_bridge
             "Options": null,
             "Config": [
                 {
-                    "Subnet": "172.29.0.0/16",
-                    "Gateway": "172.29.0.1"
+                    "Subnet": "172.31.0.0/16",
+                    "Gateway": "172.31.0.1"
                 }
             ]
         },
@@ -159,18 +209,25 @@ $ docker inspect mysql_replication_docker_bridge
         },
         "ConfigOnly": false,
         "Containers": {
-            "074c510fce929b4d91946b5071698c9f3c399d26a8209ada18aa51bf33e36a18": {
-                "Name": "mysql_replication_mysql_slave_1",
-                "EndpointID": "62e4cc05531d0aa4c13740337695324ea528501f9d3fd781445e00041c67eed0",
-                "MacAddress": "02:42:ac:1d:00:02",
-                "IPv4Address": "172.29.0.2/16",
+            "2d3eb558a9dc7b862f935905bcb63c1dcfe2bdace849eeff168e82452ead2b0a": {
+                "Name": "mysql_replication_mysql_slave_2_1",
+                "EndpointID": "5695e7f994a68e9c72993e6c5d99c132aa5be5cc4d20856d799a687a205ceb13",
+                "MacAddress": "02:42:ac:1f:00:03",
+                "IPv4Address": "172.31.0.3/16",
                 "IPv6Address": ""
             },
-            "bd02031398584ee1730f4a44138d0c6fd73bfc0af8babcab4fec20adf0818bca": {
+            "c8620044cad25ee10c332562b353a556f5954aa731303f0aaf4f76c34d7c630f": {
                 "Name": "mysql_replication_mysql_master_1",
-                "EndpointID": "a60a0510cbc1efdd34b61dca13ce67c5eceebed40d3b91f2b30315234bec795c",
-                "MacAddress": "02:42:ac:1d:00:03",
-                "IPv4Address": "172.29.0.3/16",
+                "EndpointID": "7dba11fe3c982761c74e6290692a746790bf125be5685aaa6c5124510ef43ee0",
+                "MacAddress": "02:42:ac:1f:00:02",
+                "IPv4Address": "172.31.0.2/16",
+                "IPv6Address": ""
+            },
+            "cca3a489b9e6b914439e6dba31eccaa4d52c11fad9b122248bea209524e4310c": {
+                "Name": "mysql_replication_mysql_slave_1_1",
+                "EndpointID": "7a93655982d98d3dbaaa430eb5a4b60c77e122de0f8530d15a5c72bd99e06c18",
+                "MacAddress": "02:42:ac:1f:00:04",
+                "IPv4Address": "172.31.0.4/16",
                 "IPv6Address": ""
             }
         },
@@ -184,77 +241,66 @@ $ docker inspect mysql_replication_docker_bridge
 ]
 ```
 
-## 2.3 mysql_master : show master status
+## 2.3 master status & slave status
 
-```bash
-$ mysql -h127.0.0.1 -P13306 -uroot -proot
-mysql: [Warning] Using a password on the command line interface can be insecure.
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 2
-Server version: 5.7.32-log MySQL Community Server (GPL)
+### 2.3.1 master
 
-Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
-
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
+```mysql
 mysql> show master status;
 +-------------------+----------+--------------+------------------+-------------------+
 | File              | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
 +-------------------+----------+--------------+------------------+-------------------+
 | master_bin.000003 |      154 |              |                  |                   |
 +-------------------+----------+--------------+------------------+-------------------+
-1 row in set (0.00 sec)
-
-mysql> show databases;
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| mysql              |
-| performance_schema |
-| sys                |
-+--------------------+
-4 rows in set (0.02 sec)
-```
-
-## 2.4 mysql_slave : start slave
-
-```bash
-$ mysql -h127.0.0.1 -P23306 -uroot -proot
-mysql: [Warning] Using a password on the command line interface can be insecure.
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 3
-Server version: 5.7.32-log MySQL Community Server (GPL)
-
-Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
-
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-mysql> show master status;
-+------------------+----------+--------------+------------------+-------------------+
-| File             | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
-+------------------+----------+--------------+------------------+-------------------+
-| slave_bin.000003 |      154 |              |                  |                   |
-+------------------+----------+--------------+------------------+-------------------+
-1 row in set (0.00 sec)
+1 row in set (0.01 sec)
 
 mysql> show slave status;
-Empty set (0.01 sec)
+Empty set (0.00 sec)
+```
 
+### 2.3.2 slave_1
+
+```mysql
+mysql> show master status;
++--------------------+----------+--------------+------------------+-------------------+
+| File               | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
++--------------------+----------+--------------+------------------+-------------------+
+| slave_1_bin.000003 |      154 |              |                  |                   |
++--------------------+----------+--------------+------------------+-------------------+
+1 row in set (0.01 sec)
+
+mysql> show slave status;
+Empty set (0.00 sec)
+```
+
+### 2.3.3 slave_2
+
+```mysql
+mysql> show master status;
++--------------------+----------+--------------+------------------+-------------------+
+| File               | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
++--------------------+----------+--------------+------------------+-------------------+
+| slave_2_bin.000003 |      154 |              |                  |                   |
++--------------------+----------+--------------+------------------+-------------------+
+1 row in set (0.01 sec)
+
+mysql> show slave status;
+Empty set (0.00 sec)
+```
+
+## 2.4 start slave
+
+### 2.4.1 slave_1
+
+```mysql
 mysql> change master to master_host='mysql_master',master_user='root',master_password='root',master_log_file='master_bin.000003',master_log_pos=154;
-Query OK, 0 rows affected, 1 warning (0.03 sec)
+Query OK, 0 rows affected, 1 warning (0.02 sec)
 
 mysql> start slave;
-Query OK, 0 rows affected (0.00 sec)
+Query OK, 0 rows affected (0.01 sec)
+```
 
+```mysql
 mysql> show slave status\G;
 *************************** 1. row ***************************
                Slave_IO_State: Waiting for master to send event
@@ -264,7 +310,7 @@ mysql> show slave status\G;
                 Connect_Retry: 60
               Master_Log_File: master_bin.000003
           Read_Master_Log_Pos: 154
-               Relay_Log_File: slave_relay_bin.000002
+               Relay_Log_File: slave_1_relay_bin.000002
                 Relay_Log_Pos: 321
         Relay_Master_Log_File: master_bin.000003
              Slave_IO_Running: Yes
@@ -279,7 +325,7 @@ mysql> show slave status\G;
                    Last_Error:
                  Skip_Counter: 0
           Exec_Master_Log_Pos: 154
-              Relay_Log_Space: 528
+              Relay_Log_Space: 530
               Until_Condition: None
                Until_Log_File:
                 Until_Log_Pos: 0
@@ -296,8 +342,81 @@ Master_SSL_Verify_Server_Cert: No
                Last_SQL_Errno: 0
                Last_SQL_Error:
   Replicate_Ignore_Server_Ids:
-             Master_Server_Id: 1
-                  Master_UUID: a4af4717-347a-11eb-8b95-0242ac1d0003
+             Master_Server_Id: 10
+                  Master_UUID: 5471db9a-34b3-11eb-8fd1-0242ac1f0002
+             Master_Info_File: /var/lib/mysql/master.info
+                    SQL_Delay: 0
+          SQL_Remaining_Delay: NULL
+      Slave_SQL_Running_State: Slave has read all relay log; waiting for more updates
+           Master_Retry_Count: 86400
+                  Master_Bind:
+      Last_IO_Error_Timestamp:
+     Last_SQL_Error_Timestamp:
+               Master_SSL_Crl:
+           Master_SSL_Crlpath:
+           Retrieved_Gtid_Set:
+            Executed_Gtid_Set:
+                Auto_Position: 0
+         Replicate_Rewrite_DB:
+                 Channel_Name:
+           Master_TLS_Version:
+1 row in set (0.00 sec)
+```
+
+### 2.4.2 slave_2
+
+```mysql
+mysql> change master to master_host='mysql_master',master_user='root',master_password='root',master_log_file='master_bin.000003',master_log_pos=154;
+Query OK, 0 rows affected, 1 warning (0.02 sec)
+
+mysql> start slave;
+Query OK, 0 rows affected (0.01 sec)
+```
+
+```mysql
+mysql> show slave status\G;
+*************************** 1. row ***************************
+               Slave_IO_State: Waiting for master to send event
+                  Master_Host: mysql_master
+                  Master_User: root
+                  Master_Port: 3306
+                Connect_Retry: 60
+              Master_Log_File: master_bin.000003
+          Read_Master_Log_Pos: 154
+               Relay_Log_File: slave_2_relay_bin.000002
+                Relay_Log_Pos: 321
+        Relay_Master_Log_File: master_bin.000003
+             Slave_IO_Running: Yes
+            Slave_SQL_Running: Yes
+              Replicate_Do_DB:
+          Replicate_Ignore_DB:
+           Replicate_Do_Table:
+       Replicate_Ignore_Table:
+      Replicate_Wild_Do_Table:
+  Replicate_Wild_Ignore_Table:
+                   Last_Errno: 0
+                   Last_Error:
+                 Skip_Counter: 0
+          Exec_Master_Log_Pos: 154
+              Relay_Log_Space: 530
+              Until_Condition: None
+               Until_Log_File:
+                Until_Log_Pos: 0
+           Master_SSL_Allowed: No
+           Master_SSL_CA_File:
+           Master_SSL_CA_Path:
+              Master_SSL_Cert:
+            Master_SSL_Cipher:
+               Master_SSL_Key:
+        Seconds_Behind_Master: 0
+Master_SSL_Verify_Server_Cert: No
+                Last_IO_Errno: 0
+                Last_IO_Error:
+               Last_SQL_Errno: 0
+               Last_SQL_Error:
+  Replicate_Ignore_Server_Ids:
+             Master_Server_Id: 10
+                  Master_UUID: 5471db9a-34b3-11eb-8fd1-0242ac1f0002
              Master_Info_File: /var/lib/mysql/master.info
                     SQL_Delay: 0
           SQL_Remaining_Delay: NULL
@@ -315,16 +434,15 @@ Master_SSL_Verify_Server_Cert: No
                  Channel_Name:
            Master_TLS_Version:
 1 row in set (0.01 sec)
-
-ERROR:
-No query specified
 ```
 
-## 2.5 mysql_master : create database
+## 2.5 create database
 
-```sql
+### 2.5.1 mysql_master
+
+```mysql
 mysql> create database master_test_db;
-Query OK, 1 row affected (0.01 sec)
+Query OK, 1 row affected (0.00 sec)
 
 mysql> show master status;
 +-------------------+----------+--------------+------------------+-------------------+
@@ -335,9 +453,11 @@ mysql> show master status;
 1 row in set (0.01 sec)
 ```
 
-## 2.6 mysql_slave : show slave status
+## 2.6 slave status
 
-```sql
+### 2.6.1 slave_1
+
+```mysql
 mysql> show databases;
 +--------------------+
 | Database           |
@@ -351,13 +471,15 @@ mysql> show databases;
 5 rows in set (0.01 sec)
 
 mysql> show master status;
-+------------------+----------+--------------+------------------+-------------------+
-| File             | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
-+------------------+----------+--------------+------------------+-------------------+
-| slave_bin.000003 |      343 |              |                  |                   |
-+------------------+----------+--------------+------------------+-------------------+
++--------------------+----------+--------------+------------------+-------------------+
+| File               | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
++--------------------+----------+--------------+------------------+-------------------+
+| slave_1_bin.000003 |      343 |              |                  |                   |
++--------------------+----------+--------------+------------------+-------------------+
 1 row in set (0.00 sec)
+```
 
+```mysql
 mysql> show slave status\G;
 *************************** 1. row ***************************
                Slave_IO_State: Waiting for master to send event
@@ -367,7 +489,7 @@ mysql> show slave status\G;
                 Connect_Retry: 60
               Master_Log_File: master_bin.000003
           Read_Master_Log_Pos: 343
-               Relay_Log_File: slave_relay_bin.000002
+               Relay_Log_File: slave_1_relay_bin.000002
                 Relay_Log_Pos: 510
         Relay_Master_Log_File: master_bin.000003
              Slave_IO_Running: Yes
@@ -382,7 +504,7 @@ mysql> show slave status\G;
                    Last_Error:
                  Skip_Counter: 0
           Exec_Master_Log_Pos: 343
-              Relay_Log_Space: 717
+              Relay_Log_Space: 719
               Until_Condition: None
                Until_Log_File:
                 Until_Log_Pos: 0
@@ -399,8 +521,8 @@ Master_SSL_Verify_Server_Cert: No
                Last_SQL_Errno: 0
                Last_SQL_Error:
   Replicate_Ignore_Server_Ids:
-             Master_Server_Id: 1
-                  Master_UUID: a4af4717-347a-11eb-8b95-0242ac1d0003
+             Master_Server_Id: 10
+                  Master_UUID: 5471db9a-34b3-11eb-8fd1-0242ac1f0002
              Master_Info_File: /var/lib/mysql/master.info
                     SQL_Delay: 0
           SQL_Remaining_Delay: NULL
@@ -417,39 +539,129 @@ Master_SSL_Verify_Server_Cert: No
          Replicate_Rewrite_DB:
                  Channel_Name:
            Master_TLS_Version:
-1 row in set (0.01 sec)
+1 row in set (0.00 sec)
+```
 
-ERROR:
-No query specified
+### 2.6.2 slave_2
+
+```mysql
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| master_test_db     |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+5 rows in set (0.01 sec)
+
+mysql> show master status;
++--------------------+----------+--------------+------------------+-------------------+
+| File               | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
++--------------------+----------+--------------+------------------+-------------------+
+| slave_2_bin.000003 |      343 |              |                  |                   |
++--------------------+----------+--------------+------------------+-------------------+
+1 row in set (0.00 sec)
+```
+
+```mysql
+mysql> show slave status\G;
+*************************** 1. row ***************************
+               Slave_IO_State: Waiting for master to send event
+                  Master_Host: mysql_master
+                  Master_User: root
+                  Master_Port: 3306
+                Connect_Retry: 60
+              Master_Log_File: master_bin.000003
+          Read_Master_Log_Pos: 343
+               Relay_Log_File: slave_2_relay_bin.000002
+                Relay_Log_Pos: 510
+        Relay_Master_Log_File: master_bin.000003
+             Slave_IO_Running: Yes
+            Slave_SQL_Running: Yes
+              Replicate_Do_DB:
+          Replicate_Ignore_DB:
+           Replicate_Do_Table:
+       Replicate_Ignore_Table:
+      Replicate_Wild_Do_Table:
+  Replicate_Wild_Ignore_Table:
+                   Last_Errno: 0
+                   Last_Error:
+                 Skip_Counter: 0
+          Exec_Master_Log_Pos: 343
+              Relay_Log_Space: 719
+              Until_Condition: None
+               Until_Log_File:
+                Until_Log_Pos: 0
+           Master_SSL_Allowed: No
+           Master_SSL_CA_File:
+           Master_SSL_CA_Path:
+              Master_SSL_Cert:
+            Master_SSL_Cipher:
+               Master_SSL_Key:
+        Seconds_Behind_Master: 0
+Master_SSL_Verify_Server_Cert: No
+                Last_IO_Errno: 0
+                Last_IO_Error:
+               Last_SQL_Errno: 0
+               Last_SQL_Error:
+  Replicate_Ignore_Server_Ids:
+             Master_Server_Id: 10
+                  Master_UUID: 5471db9a-34b3-11eb-8fd1-0242ac1f0002
+             Master_Info_File: /var/lib/mysql/master.info
+                    SQL_Delay: 0
+          SQL_Remaining_Delay: NULL
+      Slave_SQL_Running_State: Slave has read all relay log; waiting for more updates
+           Master_Retry_Count: 86400
+                  Master_Bind:
+      Last_IO_Error_Timestamp:
+     Last_SQL_Error_Timestamp:
+               Master_SSL_Crl:
+           Master_SSL_Crlpath:
+           Retrieved_Gtid_Set:
+            Executed_Gtid_Set:
+                Auto_Position: 0
+         Replicate_Rewrite_DB:
+                 Channel_Name:
+           Master_TLS_Version:
+1 row in set (0.00 sec)
 ```
 
 ## 2.7 down & rmi
 
 ```bash
 $ docker-compose down
-Stopping mysql_replication_mysql_master_1 ... done
-Stopping mysql_replication_mysql_slave_1  ... done
-Removing mysql_replication_mysql_master_1 ... done
-Removing mysql_replication_mysql_slave_1  ... done
+Stopping mysql_replication_mysql_slave_2_1 ... done
+Stopping mysql_replication_mysql_slave_1_1 ... done
+Stopping mysql_replication_mysql_master_1  ... done
+Removing mysql_replication_mysql_slave_2_1 ... done
+Removing mysql_replication_mysql_slave_1_1 ... done
+Removing mysql_replication_mysql_master_1  ... done
 Removing network mysql_replication_docker_bridge
 ```
 
 ```bash
 $ docker images
-REPOSITORY                       TAG                 IMAGE ID            CREATED             SIZE
-mysql_replication_mysql_master   latest              aca797b87d2d        18 minutes ago      449MB
-mysql_replication_mysql_slave    latest              32c306b1afee        18 minutes ago      449MB
-mysql                            5.6                 e1b3da40572b        11 days ago         302MB
-mysql                            5.7                 ae0658fdbad5        11 days ago         449MB
-mysql                            latest              dd7265748b5d        11 days ago         545MB
+REPOSITORY                        TAG                 IMAGE ID            CREATED             SIZE
+mysql_replication_mysql_slave_1   latest              c87cb498164a        16 minutes ago      449MB
+mysql_replication_mysql_slave_2   latest              fb50987331eb        16 minutes ago      449MB
+mysql_replication_mysql_master    latest              c40edb63fbff        16 minutes ago      449MB
+mysql                             5.6                 e1b3da40572b        11 days ago         302MB
+mysql                             5.7                 ae0658fdbad5        11 days ago         449MB
+mysql                             latest              dd7265748b5d        11 days ago         545MB
 
-$ docker rmi mysql_replication_mysql_master mysql_replication_mysql_slave
+$ docker rmi mysql_replication_mysql_master mysql_replication_mysql_slave_1 mysql_replication_mysql_slave_2
 Untagged: mysql_replication_mysql_master:latest
-Deleted: sha256:aca797b87d2dcc3f68e1c390de6d7d13c1f6bd24a6b0a0ba010eb8720d6dc321
-Deleted: sha256:012591338067e825c1f8a7c90a7d4d05339720a9c5b1f61452afdee5d5ce44d7
-Untagged: mysql_replication_mysql_slave:latest
-Deleted: sha256:32c306b1afee7737f4b29caf9e661b0752aef9526b02f2753a2814dc5ca76000
-Deleted: sha256:45318aeb4cef913f8848244bb0e5a61a78336074e092beeb7db9b95e21abee07
+Deleted: sha256:c40edb63fbff05e77ba895489c1c8af52a54eeb873970ac9eeecc3e8ca14e836
+Deleted: sha256:b35ee2764212a46e1d6d0c614f6cc137b735cf43963b4b864722f96b309958b2
+Untagged: mysql_replication_mysql_slave_1:latest
+Deleted: sha256:c87cb498164a96499da1ed2a251d6f06519b893b42699a01aab95ca92ef1df4d
+Deleted: sha256:40eac702b2a1fc6b4d95d61207ec264449fab019e608f6a50270830168c72730
+Untagged: mysql_replication_mysql_slave_2:latest
+Deleted: sha256:fb50987331eb8f963311d93ac4c1b309b81028e396f1d2fa7f76fe24c2375318
+Deleted: sha256:8c6b5545b17cf5eaa6a5348958175900b6c55b6d58276077ffdaccfc60699cc7
 ```
 
 ```bash
@@ -459,4 +671,3 @@ NETWORK ID          NAME                DRIVER              SCOPE
 07b11c107114        host                host                local
 b6feea96fd9b        none                null                local
 ```
-

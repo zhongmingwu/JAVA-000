@@ -14,16 +14,29 @@ services:
     networks:
       - docker_bridge
 
-  mysql_slave:
+  mysql_slave_1:
     build:
       context: .
-      dockerfile: slave/Dockerfile
+      dockerfile: slave_1/Dockerfile
     environment:
       - "MYSQL_ROOT_PASSWORD=root"
     ports:
       - "23306:3306"
     restart: always
-    hostname: mysql_slave
+    hostname: mysql_slave_1
+    networks:
+      - docker_bridge
+
+  mysql_slave_2:
+    build:
+      context: .
+      dockerfile: slave_2/Dockerfile
+    environment:
+      - "MYSQL_ROOT_PASSWORD=root"
+    ports:
+      - "33306:3306"
+    restart: always
+    hostname: mysql_slave_2
     networks:
       - docker_bridge
 

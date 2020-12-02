@@ -120,7 +120,7 @@ mysql_replication_mysql_master_1   docker-entrypoint.sh mysqld   Up      0.0.0.0
 mysql_replication_mysql_slave_1    docker-entrypoint.sh mysqld   Up      0.0.0.0:23306->3306/tcp, 33060/tcp
 ```
 
-## 2.2 Network
+## 2.2 network
 
 ```bash
 $ docker network ls

@@ -1,4 +1,9 @@
+# 作业0
+
+第8周作业已补，辛苦助教老师审阅，链接：https://github.com/zhongmingwu/JAVA-000/tree/main/Week_08
+
 # 作业1
+
 1. 描述：改造自定义RPC的程序，提交到GitHub
    - 尝试将服务端写死查找接口实现类变成泛型和反射
    - 尝试将客户端动态代理改成AOP，添加异常处理

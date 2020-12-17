@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+
+  mysql_1:
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    hostname: mysql_1
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: e_commerce
+    ports:
+      - "13306:3306"
+
+  mysql_2:
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    hostname: mysql_2
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: e_commerce
+    ports:
+      - "23306:3306"

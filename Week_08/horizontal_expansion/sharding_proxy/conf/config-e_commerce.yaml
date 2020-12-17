@@ -1,0 +1,34 @@
+schemaName: e_commerce
+
+dataSourceCommon:
+  username: root
+  password: 123456
+
+dataSources:
+  ds_0:
+    url: jdbc:mysql://127.0.0.1:13306/e_commerce_1?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+  ds_1:
+    url: jdbc:mysql://127.0.0.1:23306/e_commerce_2?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+
+rules:
+  - !SHARDING
+    tables:
+      order:
+        actualDataNodes: ds_${0..1}.order_${0..15}
+        tableStrategy:
+          standard:
+            shardingColumn: id
+            shardingAlgorithmName: order_inline
+    defaultDatabaseStrategy:
+      standard:
+        shardingColumn: user_id
+        shardingAlgorithmName: database_inline
+    shardingAlgorithms:
+      database_inline:
+        type: INLINE
+        props:
+          algorithm-expression: ds_${user_id % 2}
+      order_inline:
+        type: INLINE
+        props:
+          algorithm-expression: order_${id % 16}

@@ -1,0 +1,16 @@
+authentication:
+  users:
+    root:
+      password: 123456
+
+props:
+  max-connections-size-per-query: 1
+  acceptor-size: 16
+  executor-size: 16
+  proxy-frontend-flush-threshold: 128
+  proxy-transaction-type: LOCAL
+  proxy-opentracing-enabled: false
+  proxy-hint-enabled: false
+  query-with-cipher-column: true
+  sql-show: true
+  check-table-metadata-enabled: false

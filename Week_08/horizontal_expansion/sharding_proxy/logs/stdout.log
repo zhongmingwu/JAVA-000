@@ -1,141 +1,21 @@
-# 1 MySQL
-
-## 1.1 docker-compose.yml
-
-```yaml
-version: '3.8'
-
-services:
-
-  mysql_1:
-    image: mysql:latest
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
-    hostname: mysql_1
-    environment:
-      MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: e_commerce_1
-    ports:
-      - "13306:3306"
-
-  mysql_2:
-    image: mysql:latest
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
-    hostname: mysql_2
-    environment:
-      MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: e_commerce_2
-    ports:
-      - "23306:3306"
-```
-
-## 1.2 up
-
-```bash
-$ docker-compose -f mysql/docker-compose.yml up -d
-Creating network "mysql_default" with the default driver
-Creating mysql_mysql_2_1 ... done
-Creating mysql_mysql_1_1 ... done
-
-$ docker-compose -f mysql/docker-compose.yml ps -a
-     Name                    Command               State                 Ports
----------------------------------------------------------------------------------------------
-mysql_mysql_1_1   docker-entrypoint.sh --def ...   Up      0.0.0.0:13306->3306/tcp, 33060/tcp
-mysql_mysql_2_1   docker-entrypoint.sh --def ...   Up      0.0.0.0:23306->3306/tcp, 33060/tcp
-```
-
-# 2 Sharding Proxy
-
-## 2.1 server.yaml
-
-```yaml
-authentication:
-  users:
-    root:
-      password: 123456
-
-props:
-  max-connections-size-per-query: 1
-  acceptor-size: 16
-  executor-size: 16
-  proxy-frontend-flush-threshold: 128
-  proxy-transaction-type: LOCAL
-  proxy-opentracing-enabled: false
-  proxy-hint-enabled: false
-  query-with-cipher-column: true
-  sql-show: true
-  check-table-metadata-enabled: false
-```
-
-## 2.2 config-e_commerce.yaml
-
-```yaml
-schemaName: e_commerce
-
-dataSourceCommon:
-  username: root
-  password: 123456
-  connectionTimeoutMilliseconds: 30000
-  idleTimeoutMilliseconds: 60000
-  maxLifetimeMilliseconds: 1800000
-  maxPoolSize: 50
-  minPoolSize: 1
-  maintenanceIntervalMilliseconds: 30000
-
-dataSources:
-  ds_0:
-    url: jdbc:mysql://127.0.0.1:13306/e_commerce_1?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
-  ds_1:
-    url: jdbc:mysql://127.0.0.1:23306/e_commerce_2?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
-
-rules:
-  - !SHARDING
-    tables:
-      order:
-        actualDataNodes: ds_${0..1}.order_${0..15}
-        tableStrategy:
-          standard:
-            shardingColumn: id
-            shardingAlgorithmName: order_inline
-    defaultDatabaseStrategy:
-      standard:
-        shardingColumn: user_id
-        shardingAlgorithmName: database_inline
-    shardingAlgorithms:
-      database_inline:
-        type: INLINE
-        props:
-          algorithm-expression: ds_${user_id % 2}
-      order_inline:
-        type: INLINE
-        props:
-          algorithm-expression: order_${id % 16}
-```
-
-## 2.3 start
-
-```bash
-$ sharding_proxy/bin/start.sh 33306
-Starting the ShardingSphere-Proxy ...
-The port is 33306
-sharding_proxy/bin/start.sh: line 57: fg: no job control
-...
-```
-
-# 3 Database Operation
-
-## 3.1 Create Table
-
-```sql
-mysql> CREATE TABLE IF NOT EXISTS `order` (
-    ->     `id` BIGINT(20) NOT NULL PRIMARY KEY,
-    ->     `user_id` BIGINT(20) NOT NULL
-    -> ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-Query OK, 0 rows affected (0.54 sec)
-```
-
-```sql
+[INFO ] 17:00:59.636 [main] ShardingSphere-metadata - Loading 0 tables' meta data for unconfigured tables.
+[INFO ] 17:00:59.642 [main] ShardingSphere-metadata - Loading 0 tables' meta data for unconfigured tables.
+[INFO ] 17:00:59.648 [main] ShardingSphere-metadata - Loading 0 tables' meta data for unconfigured tables.
+[INFO ] 17:00:59.650 [main] ShardingSphere-metadata - Loading 0 tables' meta data for unconfigured tables.
+[INFO ] 17:00:59.656 [main] o.a.s.i.c.s.SchemaContextsBuilder - Load meta data for schema e_commerce finished, cost 72 milliseconds.
+Thanks for using Atomikos! Evaluate http://www.atomikos.com/Main/ExtremeTransactions for advanced features and professional support
+or register at http://www.atomikos.com/Main/RegisterYourDownload to disable this message and receive FREE tips & advice
+[INFO ] 17:00:59.751 [main] o.a.s.p.i.i.AbstractBootstrapInitializer - Database name is `MySQL`, version is `8.0.22`
+[INFO ] 17:00:59.863 [main] o.a.s.p.frontend.ShardingSphereProxy - ShardingSphere-Proxy start success.
+[INFO ] 17:01:33.385 [ShardingSphere-Command-1] ShardingSphere-SQL - Logic SQL: show tables
+[INFO ] 17:01:33.386 [ShardingSphere-Command-1] ShardingSphere-SQL - SQLStatement: MySQLShowTablesStatement(fromSchema=Optional.empty)
+[INFO ] 17:01:33.386 [ShardingSphere-Command-1] ShardingSphere-SQL - Actual SQL: ds_0 ::: show tables
+[INFO ] 17:01:33.513 [ShardingSphere-Command-2] ShardingSphere-SQL - Logic SQL: select @@version_comment limit 1
+[INFO ] 17:01:33.514 [ShardingSphere-Command-2] ShardingSphere-SQL - SQLStatement: MySQLSelectStatement(limit=Optional[org.apache.shardingsphere.sql.parser.sql.common.segment.dml.pagination.limit.LimitSegment@55355e51], lock=Optional.empty)
+[INFO ] 17:01:33.514 [ShardingSphere-Command-2] ShardingSphere-SQL - Actual SQL: ds_1 ::: select @@version_comment limit 1
+[INFO ] 17:01:36.448 [ShardingSphere-Command-3] ShardingSphere-SQL - Logic SQL: show tables
+[INFO ] 17:01:36.448 [ShardingSphere-Command-3] ShardingSphere-SQL - SQLStatement: MySQLShowTablesStatement(fromSchema=Optional.empty)
+[INFO ] 17:01:36.449 [ShardingSphere-Command-3] ShardingSphere-SQL - Actual SQL: ds_0 ::: show tables
 [INFO ] 17:01:45.792 [ShardingSphere-Command-4] ShardingSphere-SQL - Logic SQL: CREATE TABLE IF NOT EXISTS `order` (
     `id` BIGINT(20) NOT NULL PRIMARY KEY,
     `user_id` BIGINT(20) NOT NULL
@@ -269,45 +149,12 @@ Query OK, 0 rows affected (0.54 sec)
     `id` BIGINT(20) NOT NULL PRIMARY KEY,
     `user_id` BIGINT(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-```
-
-## 3.2 Insert
-
-```sql
-mysql> insert into `order` values (5,10);
-Query OK, 1 row affected (0.16 sec)
-```
-
-```sql
 [INFO ] 17:06:45.888 [ShardingSphere-Command-5] ShardingSphere-SQL - Logic SQL: insert into `order` values (5,10)
 [INFO ] 17:06:45.888 [ShardingSphere-Command-5] ShardingSphere-SQL - SQLStatement: MySQLInsertStatement(setAssignment=Optional.empty, onDuplicateKeyColumns=Optional.empty)
 [INFO ] 17:06:45.888 [ShardingSphere-Command-5] ShardingSphere-SQL - Actual SQL: ds_0 ::: insert into `order_5` values (5, 10)
-```
-
-```sql
-mysql> insert into `order` values (7,21);
-Query OK, 1 row affected (0.04 sec)
-```
-
-```sql
 [INFO ] 17:07:48.922 [ShardingSphere-Command-6] ShardingSphere-SQL - Logic SQL: insert into `order` values (7,21)
 [INFO ] 17:07:48.922 [ShardingSphere-Command-6] ShardingSphere-SQL - SQLStatement: MySQLInsertStatement(setAssignment=Optional.empty, onDuplicateKeyColumns=Optional.empty)
 [INFO ] 17:07:48.923 [ShardingSphere-Command-6] ShardingSphere-SQL - Actual SQL: ds_1 ::: insert into `order_7` values (7, 21)
-```
-
-## 3.3 Select
-
-```sql
-mysql> select * from `order` where user_id = 21;
-+----+---------+
-| id | user_id |
-+----+---------+
-|  7 |      21 |
-+----+---------+
-1 row in set (0.11 sec)
-```
-
-```sql
 [INFO ] 17:09:11.653 [ShardingSphere-Command-7] ShardingSphere-SQL - Logic SQL: select * from `order` where user_id = 21
 [INFO ] 17:09:11.654 [ShardingSphere-Command-7] ShardingSphere-SQL - SQLStatement: MySQLSelectStatement(limit=Optional.empty, lock=Optional.empty)
 [INFO ] 17:09:11.654 [ShardingSphere-Command-7] ShardingSphere-SQL - Actual SQL: ds_1 ::: select * from `order_0` where user_id = 21
@@ -326,32 +173,9 @@ mysql> select * from `order` where user_id = 21;
 [INFO ] 17:09:11.655 [ShardingSphere-Command-7] ShardingSphere-SQL - Actual SQL: ds_1 ::: select * from `order_13` where user_id = 21
 [INFO ] 17:09:11.655 [ShardingSphere-Command-7] ShardingSphere-SQL - Actual SQL: ds_1 ::: select * from `order_14` where user_id = 21
 [INFO ] 17:09:11.655 [ShardingSphere-Command-7] ShardingSphere-SQL - Actual SQL: ds_1 ::: select * from `order_15` where user_id = 21
-```
-
-```sql
-mysql> select * from `order` where id = 7 and user_id = 21;
-+----+---------+
-| id | user_id |
-+----+---------+
-|  7 |      21 |
-+----+---------+
-1 row in set (0.08 sec)
-```
-
-```sql
 [INFO ] 17:10:25.779 [ShardingSphere-Command-8] ShardingSphere-SQL - Logic SQL: select * from `order` where id = 7 and user_id = 21
 [INFO ] 17:10:25.780 [ShardingSphere-Command-8] ShardingSphere-SQL - SQLStatement: MySQLSelectStatement(limit=Optional.empty, lock=Optional.empty)
 [INFO ] 17:10:25.780 [ShardingSphere-Command-8] ShardingSphere-SQL - Actual SQL: ds_1 ::: select * from `order_7` where id = 7 and user_id = 21
-```
-
-## 3.4 Truncate
-
-```sql
-mysql> truncate `order`;
-Query OK, 0 rows affected (0.41 sec)
-```
-
-```sql
 [INFO ] 17:11:59.100 [ShardingSphere-Command-9] ShardingSphere-SQL - Logic SQL: truncate `order`
 [INFO ] 17:11:59.100 [ShardingSphere-Command-9] ShardingSphere-SQL - SQLStatement: MySQLTruncateStatement()
 [INFO ] 17:11:59.100 [ShardingSphere-Command-9] ShardingSphere-SQL - Actual SQL: ds_0 ::: truncate `order_0`
@@ -386,21 +210,3 @@ Query OK, 0 rows affected (0.41 sec)
 [INFO ] 17:11:59.104 [ShardingSphere-Command-9] ShardingSphere-SQL - Actual SQL: ds_1 ::: truncate `order_13`
 [INFO ] 17:11:59.104 [ShardingSphere-Command-9] ShardingSphere-SQL - Actual SQL: ds_1 ::: truncate `order_14`
 [INFO ] 17:11:59.104 [ShardingSphere-Command-9] ShardingSphere-SQL - Actual SQL: ds_1 ::: truncate `order_15`
-```
-
-# 4 Stop & Down
-
-```bash
-$ sharding_proxy/bin/stop.sh
-Stopping the ShardingSphere-Proxy ....OK!
-PID: 19382
-```
-
-```bash
-$ docker-compose -f mysql/docker-compose.yml down
-Stopping mysql_mysql_1_1 ... done
-Stopping mysql_mysql_2_1 ... done
-Removing mysql_mysql_1_1 ... done
-Removing mysql_mysql_2_1 ... done
-Removing network mysql_default
-```

@@ -4,6 +4,7 @@
    - 并在新结构在演示常见的增删改查操作
    - 代码、sql和配置文件，上传到Github
 2. 解答
+   - [horizontal_expansion](https://github.com/zhongmingwu/JAVA-000/tree/main/Week_08/horizontal_expansion)
 
 # 作业2
 1. 描述：基于hmily TCC或ShardingSphere的Atomikos XA实现一个简单的分布式事务应用demo（二选一），提交到Github

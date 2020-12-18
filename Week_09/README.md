@@ -9,6 +9,7 @@
    - 尝试将客户端动态代理改成AOP，添加异常处理
    - 尝试使用Netty+HTTP作为Client端传输方式
 2. 解答
+   - https://github.com/zhongmingwu/java-training-camp/tree/main/week09/rpc
 
 # 作业2
 1. 描述：结合dubbo+hmily，实现一个TCC外汇交易处理，代码提交到GitHub

@@ -106,3 +106,114 @@ repl_backlog_histlen:294
 (error) READONLY You can't write against a read only replica.
 ```
 
+### Sentinel
+
+#### docker-compose.yml
+
+```yaml
+version: "3.6"
+services:
+  redis_master:
+    image: redis
+    container_name: redis_master
+    restart: always
+    command: redis-server --port 6379 --requirepass master_pwd --appendonly yes
+    ports:
+      - 16379:6379
+
+  redis_slave_1:
+    image: redis
+    container_name: redis_slave_1
+    restart: always
+    command: redis-server --slaveof redis_master 6379 --port 6379 --requirepass slave_pwd --masterauth master_pwd --appendonly yes
+    ports:
+      - 26379:6379
+
+  redis_slave_2:
+    image: redis
+    container_name: redis_slave_2
+    restart: always
+    command: redis-server --slaveof redis_master 6379 --port 6379 --requirepass slave_pwd --masterauth master_pwd --appendonly yes
+    ports:
+      - 36379:6379
+
+  redis_sentinel_1:
+    image: redis
+    container_name: redis_sentinel_1
+    restart: always
+    ports:
+      - 10000:6379
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    volumes:
+      - ./sentinel.conf:/usr/local/etc/redis/sentinel.conf
+
+  redis_sentinel_2:
+    image: redis
+    container_name: redis_sentinel_2
+    restart: always
+    ports:
+      - 20000:6379
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    volumes:
+      - ./sentinel.conf:/usr/local/etc/redis/sentinel.conf
+
+  redis_sentinel_3:
+    image: redis
+    container_name: redis_sentinel_3
+    restart: always
+    ports:
+      - 30000:6379
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    volumes:
+      - ./sentinel.conf:/usr/local/etc/redis/sentinel.conf
+```
+
+#### sentinel.conf
+
+```
+port 6379
+sentinel monitor mymaster redis_master 6379 2
+sentinel auth-pass mymaster master_pwd
+sentinel down-after-milliseconds mymaster 30000
+sentinel parallel-syncs mymaster 1
+sentinel failover-timeout mymaster 60000
+sentinel deny-scripts-reconfig yes
+```
+
+#### 启动
+
+```bash
+$ docker-compose up -d
+Creating network "sentinel_default" with the default driver
+Creating redis_sentinel_1 ... done
+Creating redis_master     ... done
+Creating redis_slave_1    ... done
+Creating redis_sentinel_3 ... done
+Creating redis_sentinel_2 ... done
+Creating redis_slave_2    ... done
+
+$ docker-compose ps -a
+      Name                    Command               State            Ports
+-----------------------------------------------------------------------------------
+redis_master       docker-entrypoint.sh redis ...   Up      0.0.0.0:16379->6379/tcp
+redis_sentinel_1   docker-entrypoint.sh redis ...   Up      0.0.0.0:10000->6379/tcp
+redis_sentinel_2   docker-entrypoint.sh redis ...   Up      0.0.0.0:20000->6379/tcp
+redis_sentinel_3   docker-entrypoint.sh redis ...   Up      0.0.0.0:30000->6379/tcp
+redis_slave_1      docker-entrypoint.sh redis ...   Up      0.0.0.0:26379->6379/tcp
+redis_slave_2      docker-entrypoint.sh redis ...   Up      0.0.0.0:36379->6379/tcp
+```
+
+#### sentinel
+
+```bash
+$ redis-cli -h 127.0.0.1 -p 10000
+127.0.0.1:10000> info Sentinel
+# Sentinel
+sentinel_masters:1
+sentinel_tilt:0
+sentinel_running_scripts:0
+sentinel_scripts_queue_length:0
+sentinel_simulate_failure_flags:0
+master0:name=mymaster,status=ok,address=172.30.0.5:6379,slaves=2,sentinels=3
+```
+

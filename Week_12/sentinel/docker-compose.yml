@@ -1,0 +1,55 @@
+version: "3.6"
+services:
+  redis_master:
+    image: redis
+    container_name: redis_master
+    restart: always
+    command: redis-server --port 6379 --requirepass master_pwd --appendonly yes
+    ports:
+      - 16379:6379
+
+  redis_slave_1:
+    image: redis
+    container_name: redis_slave_1
+    restart: always
+    command: redis-server --slaveof redis_master 6379 --port 6379 --requirepass slave_pwd --masterauth master_pwd --appendonly yes
+    ports:
+      - 26379:6379
+
+  redis_slave_2:
+    image: redis
+    container_name: redis_slave_2
+    restart: always
+    command: redis-server --slaveof redis_master 6379 --port 6379 --requirepass slave_pwd --masterauth master_pwd --appendonly yes
+    ports:
+      - 36379:6379
+
+  redis_sentinel_1:
+    image: redis
+    container_name: redis_sentinel_1
+    restart: always
+    ports:
+      - 10000:6379
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    volumes:
+      - ./sentinel.conf:/usr/local/etc/redis/sentinel.conf
+
+  redis_sentinel_2:
+    image: redis
+    container_name: redis_sentinel_2
+    restart: always
+    ports:
+      - 20000:6379
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    volumes:
+      - ./sentinel.conf:/usr/local/etc/redis/sentinel.conf
+
+  redis_sentinel_3:
+    image: redis
+    container_name: redis_sentinel_3
+    restart: always
+    ports:
+      - 30000:6379
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    volumes:
+      - ./sentinel.conf:/usr/local/etc/redis/sentinel.conf

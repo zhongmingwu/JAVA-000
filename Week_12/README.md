@@ -217,3 +217,44 @@ sentinel_simulate_failure_flags:0
 master0:name=mymaster,status=ok,address=172.30.0.5:6379,slaves=2,sentinels=3
 ```
 
+### Cluster
+
+```bash
+$ docker pull grokzen/redis-cluster
+
+$ docker run  -e "IP=0.0.0.0" -e STANDALONE=true -e SENTINEL=true -d --name redis_cluster grokzen/redis-cluster
+9648353b6a9cff0296224235d9e7950fcbf3cf29786410dea0dea4962bd1748f
+
+$ docker ps -a
+CONTAINER ID   IMAGE                   COMMAND                  CREATED          STATUS          PORTS                                    NAMES
+9648353b6a9c   grokzen/redis-cluster   "/docker-entrypoint.…"   15 seconds ago   Up 14 seconds   5000-5002/tcp, 6379/tcp, 7000-7007/tcp   redis_cluster
+
+$ docker exec -it redis_cluster redis-cli -p 7000
+127.0.0.1:7000> cluster info
+cluster_state:ok
+cluster_slots_assigned:16384
+cluster_slots_ok:16384
+cluster_slots_pfail:0
+cluster_slots_fail:0
+cluster_known_nodes:6
+cluster_size:3
+cluster_current_epoch:6
+cluster_my_epoch:1
+cluster_stats_messages_ping_sent:117
+cluster_stats_messages_pong_sent:117
+cluster_stats_messages_publish_sent:140
+cluster_stats_messages_sent:374
+cluster_stats_messages_ping_received:112
+cluster_stats_messages_pong_received:117
+cluster_stats_messages_meet_received:5
+cluster_stats_messages_publish_received:140
+cluster_stats_messages_received:374
+127.0.0.1:7000> cluster nodes
+2d38f338c320ce9ecb8daf245b814af09d74f048 127.0.0.1:7003@17003 slave 42f172f4ece7d3b7195dd6f47380f0430445e95e 0 1610099622000 1 connected
+be6c0b8d81cd30a5527863a149692e3e5d5bfcef 127.0.0.1:7005@17005 slave 04a120b610a45f19b1425e33a54f1e28c8a412b1 0 1610099623512 3 connected
+042ef715931e67c105098b9fe92cb19f1b1adde4 127.0.0.1:7004@17004 slave 57887df0eef09824d34537c8dfe0228e78fa866d 0 1610099622804 2 connected
+04a120b610a45f19b1425e33a54f1e28c8a412b1 127.0.0.1:7002@17002 master - 0 1610099622000 3 connected 10923-16383
+57887df0eef09824d34537c8dfe0228e78fa866d 127.0.0.1:7001@17001 master - 0 1610099622000 2 connected 5461-10922
+42f172f4ece7d3b7195dd6f47380f0430445e95e 127.0.0.1:7000@17000 myself,master - 0 1610099622000 1 connected 0-5460
+```
+

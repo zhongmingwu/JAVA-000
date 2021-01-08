@@ -1,0 +1,17 @@
+version: "3.6"
+services:
+  redis_master:
+    image: redis
+    container_name: redis_master
+    restart: always
+    command: redis-server --port 6379 --requirepass master_pwd --appendonly yes
+    ports:
+      - 16379:6379
+
+  redis_slave:
+    image: redis
+    container_name: redis_slave
+    restart: always
+    command: redis-server --slaveof redis_master 6379 --port 6379 --requirepass slave_pwd --masterauth master_pwd --appendonly yes
+    ports:
+      - 26379:6379

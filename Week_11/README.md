@@ -6,4 +6,4 @@
 
 # 作业2
 1. 描述：基于Redis的PubSub实现订单异步处理
-2. 解答
+2. 解答：https://github.com/zhongmingwu/java-training-camp/tree/main/week11/pubsub
